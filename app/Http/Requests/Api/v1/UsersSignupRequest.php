@@ -13,7 +13,7 @@ class UsersSignupRequest extends FormRequest
 
     public function rules(): array
     {
-        $date = now()->subYears(12);
+        $date = now()->subYears(config("custom.min_age"));
         return [
             'user.name' => 'required',
             'user.password' => 'required|confirmed|min:8',

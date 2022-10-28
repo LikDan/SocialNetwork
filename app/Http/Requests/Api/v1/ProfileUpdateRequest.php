@@ -13,7 +13,7 @@ class ProfileUpdateRequest extends FormRequest
 
     public function rules(): array
     {
-        $date = now()->subYears(12);
+        $date = now()->subYears(config("custom.min_age"));
         return [
             'nickname' => 'required',
             'is_private' => 'bool',

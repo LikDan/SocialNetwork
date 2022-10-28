@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Api\v1;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\v1\UsersAuthRequest;
 use App\Http\Requests\Api\v1\UsersSignupRequest;
+use App\Http\Resources\Api\v1\ProfileResource;
 use App\Http\Resources\Api\v1\UserResource;
+use App\Models\Profile;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
@@ -14,10 +16,20 @@ use Illuminate\Support\Facades\Hash;
 
 class UsersController extends Controller
 {
-    public function signup(UsersSignupRequest $request): UserResource
+    public function signup(UsersSignupRequest $request): JsonResponse
     {
-        $user = User::create($request->validated());
-        return UserResource::make($user);
+        $user = User::create($request->validated()["user"]);
+
+        $profile = $request->validated()["profile"];
+        $user->profile()->create($profile);
+
+        $user->load('profile');
+
+        $token = $user->createToken("auth")->plainTextToken;
+        return response()->json([
+            "token" => $token,
+            "user" => UserResource::make($user),
+        ]);
     }
 
     /**
@@ -26,7 +38,7 @@ class UsersController extends Controller
     public function login(UsersAuthRequest $request): JsonResponse
     {
         $user = User::where('email', $request->email)->first();
-        if (!Hash::check($request->password, $user->password)) {
+        if (is_null($user) || !Hash::check($request->password, $user->password)) {
             throw new AuthorizationException();
         }
 
@@ -39,6 +51,8 @@ class UsersController extends Controller
 
     public function getUser(Request $request): UserResource
     {
-        return UserResource::make($request->user());
+        $user = $request->user();
+        $user->load('profile');
+        return UserResource::make($user);
     }
 }

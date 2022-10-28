@@ -13,10 +13,14 @@ class UsersSignupRequest extends FormRequest
 
     public function rules(): array
     {
+        $date = now()->subYears(config("custom.min_age"));
         return [
-            'name' => 'required',
-            'password' => 'required|confirmed|min:8',
-            'email' => 'required|email|unique:users',
+            'user.name' => 'required|max:255',
+            'user.password' => 'required|confirmed|min:8|max:255',
+            'user.email' => 'required|email|unique:users,email|max:255',
+            'profile.nickname' => 'required|max:255',
+            'profile.is_private' => 'bool',
+            'profile.birthday' => 'required|before:'.$date,
         ];
     }
 }

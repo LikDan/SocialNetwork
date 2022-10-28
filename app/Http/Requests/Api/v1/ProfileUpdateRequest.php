@@ -4,7 +4,7 @@ namespace App\Http\Requests\Api\v1;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class UsersAuthRequest extends FormRequest
+class ProfileUpdateRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -13,9 +13,11 @@ class UsersAuthRequest extends FormRequest
 
     public function rules(): array
     {
+        $date = now()->subYears(config("custom.min_age"));
         return [
-            'email' => 'required|email|max:255',
-            'password' => 'required|min:8|max:255',
+            'nickname' => 'required|max:255',
+            'is_private' => 'bool',
+            'birthday' => 'required|before:'.$date,
         ];
     }
 }

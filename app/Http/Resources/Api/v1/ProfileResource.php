@@ -3,6 +3,7 @@
 namespace App\Http\Resources\Api\v1;
 
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Storage;
 
 class ProfileResource extends JsonResource
 {
@@ -11,7 +12,7 @@ class ProfileResource extends JsonResource
         return [
             'id' => $this->id,
             'nickname' => $this->nickname,
-            'picture_url' => $this->picture_url,
+            'picture_path' => Storage::url($this->picture_path),
             'birthday' => $this->birthday,
             'is_private' => $this->is_private,
             'user_id' => $this->user_id,

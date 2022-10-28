@@ -17,7 +17,7 @@ class ProfileController extends Controller
         $file = Storage::putFile('avatars', $request->avatar);
         $user->profile()->update(["picture_path" => $file]);
 
-        return $file;
+        return Storage::url($file);
     }
 
     public function updateProfile(ProfileUpdateRequest $request)

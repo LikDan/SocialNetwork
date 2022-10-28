@@ -15,7 +15,7 @@ class ProfileUpdateRequest extends FormRequest
     {
         $date = now()->subYears(config("custom.min_age"));
         return [
-            'nickname' => 'required',
+            'nickname' => 'required|max:255',
             'is_private' => 'bool',
             'birthday' => 'required|before:'.$date,
         ];

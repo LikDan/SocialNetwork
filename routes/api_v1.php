@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\v1\PostsController;
 use App\Http\Controllers\Api\v1\ProfileController;
 use App\Http\Controllers\Api\v1\StaticController;
 use App\Http\Controllers\Api\v1\SubscriptionController;
@@ -31,9 +32,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('', 'updateProfile');
         Route::get('', 'index');
 
-        Route::controller(SubscriptionController::class)->prefix("{profile}")->group(function () {
-            Route::post('subscribe', 'subscribe');
-            Route::delete('unsubscribe', 'unsubscribe');
+        Route::prefix("{profile}")->group(function () {
+            Route::get('posts', [PostsController::class, 'profilePosts']);
+
+            Route::post('subscribe', [SubscriptionController::class, 'subscribe']);
+            Route::delete('unsubscribe', [SubscriptionController::class, 'unsubscribe']);
         });
     });
 
@@ -45,6 +48,15 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     Route::get('subscribers', [SubscriptionController::class, 'subscribers']);
+
+    Route::prefix("posts")->controller(PostsController::class)->group(function () {
+        Route::get("", 'index');
+        Route::get("feed", 'feed');
+        Route::get("{post}", 'get');
+        Route::post("", 'create');
+        Route::put("", 'update');
+        Route::delete("{id}", 'delete');
+    });
 });
 
 

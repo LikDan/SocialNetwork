@@ -33,16 +33,20 @@ class ProfileController extends Controller
         $user->profile()->update($profileParams);
 
 
-        if (!$profileParams["is_private"]) {
-            $user->profile->subscribers()->where("status", SubscriptionStatus::Pending->value)->update(["status" => SubscriptionStatus::Approved->value]);
-        }
+        if (!$profileParams["is_private"])
+            $user->profile->subscribers()
+                ->where("status", SubscriptionStatus::Pending->value)
+                ->update(["status" => SubscriptionStatus::Approved->value]);
+
 
         return ProfileResource::make($user->profile);
     }
 
     public function index(ProfilesIndexRequest $request): AnonymousResourceCollection
     {
-        $profiles = Profile::paginate($request->per_page)->appends($request->validated());
+        $perPage = $request->per_page ?? 20;
+
+        $profiles = Profile::paginate($perPage)->appends($request->validated());
         return ProfileResource::collection($profiles);
     }
 }

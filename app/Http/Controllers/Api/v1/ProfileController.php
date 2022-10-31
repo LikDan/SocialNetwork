@@ -3,23 +3,24 @@
 namespace App\Http\Controllers\Api\v1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\v1\AvatarRequest;
 use App\Http\Requests\Api\v1\ProfilesIndexRequest;
 use App\Http\Requests\Api\v1\ProfileUpdateRequest;
 use App\Http\Resources\Api\v1\ProfileResource;
 use App\Models\Profile;
 use App\Models\SubscriptionStatus;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Storage;
 
 class ProfileController extends Controller
 {
-    public function addPicture(Request $request): JsonResponse
+    public function addPicture(AvatarRequest $request): JsonResponse
     {
         $user = $request->user();
+        $avatar = $request->file("avatar");
 
-        $file = Storage::putFile('avatars', $request->avatar);
+        $file = Storage::putFile('avatars', $avatar);
         $user->profile()->update(["picture_path" => $file]);
 
         return response()->json(["url" => Storage::url($file)]);

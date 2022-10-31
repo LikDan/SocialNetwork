@@ -28,11 +28,12 @@ class ProfileController extends Controller
     public function updateProfile(ProfileUpdateRequest $request): ProfileResource
     {
         $user = $request->user();
+        $profileParams = $request->validated();
 
-        $profile = $request->validated();
-        $user->profile()->update($profile);
+        $user->profile()->update($profileParams);
 
-        if (!$profile["is_private"]) {
+
+        if (!$profileParams["is_private"]) {
             $user->profile->subscribers()->where("status", SubscriptionStatus::Pending->value)->update(["status" => SubscriptionStatus::Approved->value]);
         }
 

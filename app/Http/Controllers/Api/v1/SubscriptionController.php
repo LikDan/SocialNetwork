@@ -55,16 +55,19 @@ class SubscriptionController extends Controller
         return response()->json(["status" => "ok"]);
     }
 
-    public function updateStatus(StatusQueryRequest $request, $id)
+    public function updateStatus(StatusQueryRequest $request, string $id)
     {
         $user = $request->user();
         $status = $request->validated();
 
-        $user->profile->subscribers()->where("to_profile_id", $id)->firstOrFail()->update($status);
-        return $user->profile->subscribers()->where("to_profile_id", $id)->firstOrFail();
+        $user->profile->subscribers()->where("from_profile_id", $id)->firstOrFail()->update($status);
+        return $status->status;
     }
 
-    private function removeSubscriber(Request $request) {
+    private function removeSubscriber(Request $request, string $id) {
         $user = $request->user();
+
+        $user->profile->subscribers()->where("from_profile_id", $id)->firstOrFail()->delete();
+        return response()->json(["status" => "ok"]);
     }
 }

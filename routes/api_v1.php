@@ -36,6 +36,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::prefix("subscriptions")->controller(SubscriptionController::class)->group(function () {
         Route::post('{id}', 'updateStatus');
+        Route::delete('{id}', 'removeSubscriber');
 
         Route::get('', 'subscriptions');
     });

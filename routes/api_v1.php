@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\v1\ProfileController;
+use App\Http\Controllers\Api\v1\SubscriptionController;
 use App\Http\Controllers\Api\v1\UsersController;
 use Illuminate\Support\Facades\Route;
 
@@ -22,10 +23,24 @@ Route::controller(UsersController::class)->prefix("users")->group(function () {
 });
 
 Route::middleware('auth:sanctum')->group(function () {
-    Route::controller(ProfileController::class)->prefix("profile")->group(function () {
+    Route::controller(ProfileController::class)->prefix("profiles")->group(function () {
         Route::post('addPicture', 'addPicture');
         Route::post('', 'updateProfile');
+        Route::get('', 'index');
+
+        Route::controller(SubscriptionController::class)->prefix("{profile}")->group(function () {
+            Route::post('subscribe', 'subscribe');
+            Route::delete('unsubscribe', 'unsubscribe');
+        });
     });
+
+    Route::prefix("subscriptions")->controller(SubscriptionController::class)->group(function () {
+        Route::post('{id}', 'updateStatus');
+
+        Route::get('', 'subscriptions');
+    });
+
+    Route::get('subscribers', [SubscriptionController::class, 'subscribers']);
 });
 
 

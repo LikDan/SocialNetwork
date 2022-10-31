@@ -12,6 +12,17 @@ class Profile extends Model
 {
     use HasFactory;
 
+
+    public function subscriptions()
+    {
+        return $this->hasMany(Subscription::class, "from_profile_id");
+    }
+
+    public function subscribers()
+    {
+        return $this->hasMany(Subscription::class, "to_profile_id");
+    }
+
     protected $fillable = [
         'nickname',
         'birthday',

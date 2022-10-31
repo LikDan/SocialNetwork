@@ -3,30 +3,51 @@
 namespace App\Http\Controllers\Api\v1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\v1\AvatarRequest;
+use App\Http\Requests\Api\v1\ProfilesIndexRequest;
 use App\Http\Requests\Api\v1\ProfileUpdateRequest;
 use App\Http\Resources\Api\v1\ProfileResource;
-use Illuminate\Http\Request;
+use App\Models\Profile;
+use App\Models\SubscriptionStatus;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Storage;
 
 class ProfileController extends Controller
 {
-    public function addPicture(Request $request)
+    public function addPicture(AvatarRequest $request): JsonResponse
     {
         $user = $request->user();
+        $avatar = $request->file("avatar");
 
-        $file = Storage::putFile('avatars', $request->avatar);
+        $file = Storage::putFile('avatars', $avatar);
         $user->profile()->update(["picture_path" => $file]);
 
-        return Storage::url($file);
+        return response()->json(["url" => Storage::url($file)]);
     }
 
-    public function updateProfile(ProfileUpdateRequest $request)
+    public function updateProfile(ProfileUpdateRequest $request): ProfileResource
     {
         $user = $request->user();
+        $profileParams = $request->validated();
 
-        $profile = $request->validated();
-        $user->profile()->update($profile);
+        $user->profile()->update($profileParams);
+
+
+        if (!$profileParams["is_private"])
+            $user->profile->subscribers()
+                ->where("status", SubscriptionStatus::Pending->value)
+                ->update(["status" => SubscriptionStatus::Approved->value]);
+
 
         return ProfileResource::make($user->profile);
+    }
+
+    public function index(ProfilesIndexRequest $request): AnonymousResourceCollection
+    {
+        $perPage = $request->per_page ?? 20;
+
+        $profiles = Profile::paginate($perPage)->appends($request->validated());
+        return ProfileResource::collection($profiles);
     }
 }

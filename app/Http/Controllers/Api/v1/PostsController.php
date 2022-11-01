@@ -1,0 +1,105 @@
+<?php
+
+namespace App\Http\Controllers\Api\v1;
+
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\v1\PostCreateRequest;
+use App\Http\Requests\Api\v1\PostTypeRequest;
+use App\Http\Requests\Api\v1\PostUpdateRequest;
+use App\Http\Resources\Api\v1\PostResource;
+use App\Models\Post;
+use App\Models\PostType;
+use App\Models\Profile;
+use App\Models\Subscription;
+use App\Models\SubscriptionStatus;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+
+class PostsController extends Controller
+{
+    public function index(PostTypeRequest $request, string $profile): AnonymousResourceCollection
+    {
+        $myProfile = $request->user()->profile;
+        $type = $request->validated();
+        $profile = (int)$profile;
+
+        $profile = $myProfile->id === $profile
+            ? $myProfile
+            : $myProfile->subscribedProfiles()->findOrFail($profile);
+
+        $posts = $profile->posts()->when(
+            $profile->id !== $myProfile->id,
+            fn(Builder $query) => $query->where('type', PostType::Published->value)
+        )->when(
+            $profile->id === $myProfile->id && $type["type"] ?? false,
+            fn(Builder $query) => $query->where('type', $type["type"])
+        )->paginate();
+
+        return PostResource::collection($posts);
+    }
+
+    public function feed(Request $request): AnonymousResourceCollection
+    {
+        $profile = $request->user()->profile;
+        $posts = Subscription::select("posts.*")
+            ->join('profiles', 'profiles.id', '=', 'subscriptions.to_profile_id')
+            ->join("posts", "profiles.id", "=", "posts.profile_id")
+            ->where("from_profile_id", $profile["id"])
+            ->where("status", SubscriptionStatus::Approved->value)
+            ->where("posts.type", PostType::Published->value)
+            ->orderBy("posts.created_at")
+            ->paginate();
+        return PostResource::collection($posts);
+    }
+
+    /**
+     * @throws NotFoundHttpException
+     */
+    public function show(Request $request, string $profile, string $post): PostResource
+    {
+        $myProfile = $request->user()->profile;
+        $profile = (int)$profile;
+
+        $profile = $myProfile->id === $profile
+            ? $myProfile
+            : $myProfile->subscribedProfiles()->findOrFail($profile);
+
+        $post = $profile->posts()->when(
+            $profile->id !== $myProfile->id,
+            fn(Builder $query) => $query->where('type', PostType::Published->value)
+        )->findOrFail($post);
+
+        return PostResource::make($post);
+    }
+
+    public function store(PostCreateRequest $request): PostResource
+    {
+        $profile = $request->user()->profile;
+        $postParams = $request->validated();
+
+        $post = $profile->posts()->create($postParams);
+        return PostResource::make($post);
+    }
+
+    public function update(PostUpdateRequest $request, string $postId): PostResource
+    {
+        $profile = $request->user()->profile;
+        $postParams = $request->validated();
+
+        $post = $profile->posts()->findOrFail($postId);
+
+        $post->update($postParams);
+        return PostResource::make($post->refresh());
+    }
+
+    public function delete(Request $request, string $postId): JsonResponse
+    {
+        $profile = $request->user()->profile;
+        $profile->posts()->findOrFail($postId)->delete();
+
+        return response()->json(["status" => "ok"]);
+    }
+}

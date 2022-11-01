@@ -7,7 +7,7 @@ use App\Http\Requests\Api\v1\StatusQueryRequest;
 use App\Http\Resources\Api\v1\SubscriptionResource;
 use App\Models\Profile;
 use App\Models\SubscriptionStatus;
-use Illuminate\Database\Query\Builder;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,7 +20,7 @@ class SubscriptionController extends Controller
         $status = $request->validated();
 
         $subscriptions = $user->profile->subscriptions()
-            ->when($status->status, fn(Builder $query, string $status) => $query->where("status", $status))
+            ->when($status["status"] ?? null, fn(Builder $query, string $status) => $query->where("status", $status))
             ->with('toProfile')->paginate();
         return SubscriptionResource::collection($subscriptions);
     }

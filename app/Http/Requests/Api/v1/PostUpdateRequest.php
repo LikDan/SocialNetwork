@@ -3,10 +3,9 @@
 namespace App\Http\Requests\Api\v1;
 
 use App\Models\PostType;
-use App\Models\SubscriptionStatus;
 use Illuminate\Foundation\Http\FormRequest;
 
-class StatusQueryRequest extends FormRequest
+class PostUpdateRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -26,7 +25,9 @@ class StatusQueryRequest extends FormRequest
     public function rules()
     {
         return [
-            "status" => "in:".join(",", array_map(fn($el) => $el->value, SubscriptionStatus::cases()))
+            "title" => "required|min:10|max:255",
+            "text" => "nullable|string",
+            "type" => "required|in:".join(",", array_map(fn($el) => $el->value, PostType::cases()))
         ];
     }
 }

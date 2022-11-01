@@ -12,42 +12,36 @@ use App\Models\PostType;
 use App\Models\Profile;
 use App\Models\Subscription;
 use App\Models\SubscriptionStatus;
-use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class PostsController extends Controller
 {
-
-    /**
-     * @throws AuthorizationException
-     */
-    public function profilePosts(Request $request, Profile $profile)
+    public function index(PostTypeRequest $request, string $profile): AnonymousResourceCollection
     {
-        $userProfile = $request->user()->profile;
-
-        $subscription = $userProfile->subscriptions()
-            ->where(["from_profile_id" => $userProfile["id"], "to_profile_id" => $profile["id"]])
-            ->first();
-
-        if ($userProfile["id"] != $profile["id"] && $profile["is_private"] && $subscription["status"] != SubscriptionStatus::Approved->value)
-            throw new AuthorizationException();
-
-        $posts = $profile->posts()->where("type", PostType::Published)->paginate();
-        return PostResource::collection($posts);
-    }
-
-    public function index(PostTypeRequest $request)
-    {
+        $myProfile = $request->user()->profile;
         $type = $request->validated();
-        $posts = $request->user()->profile->posts()
-            ->when($type["type"] ?? null, fn(Builder $query, string $type) => $query->where("type", $type))
-            ->where("type", PostType::Published->value)->paginate();
+        $profile = (int)$profile;
+
+        $profile = $myProfile->id === $profile
+            ? $myProfile
+            : $myProfile->subscribedProfiles()->findOrFail($profile);
+
+        $posts = $profile->posts()->when(
+            $profile->id !== $myProfile->id,
+            fn(Builder $query) => $query->where('type', PostType::Published->value)
+        )->when(
+            $profile->id === $myProfile->id && $type["type"] ?? false,
+            fn(Builder $query) => $query->where('type', $type["type"])
+        )->paginate();
+
         return PostResource::collection($posts);
     }
 
-    public function feed(Request $request)
+    public function feed(Request $request): AnonymousResourceCollection
     {
         $profile = $request->user()->profile;
         $posts = Subscription::select("posts.*")
@@ -62,53 +56,49 @@ class PostsController extends Controller
     }
 
     /**
-     * @throws AuthorizationException
+     * @throws NotFoundHttpException
      */
-    public function get(PostUpdateRequest $request, Post $post)
+    public function show(Request $request, string $profile, string $post): PostResource
     {
-        $profile = $request->user()->profile;
-        if ($profile["id"] != $post["profile_id"] && Profile::where("id", $post["profile_id"])->first()["is_private"]) {
-            $subscription = $profile->subscriptions()
-                ->where(["from_profile_id" => $profile["id"], "to_profile_id" => $post["profile_id"]])
-                ->first();
-            if ($subscription["status"] ?? null != SubscriptionStatus::Approved->value)
-                throw new AuthorizationException();
-        }
+        $myProfile = $request->user()->profile;
+        $profile = (int)$profile;
+
+        $profile = $myProfile->id === $profile
+            ? $myProfile
+            : $myProfile->subscribedProfiles()->findOrFail($profile);
+
+        $post = $profile->posts()->when(
+            $profile->id !== $myProfile->id,
+            fn(Builder $query) => $query->where('type', PostType::Published->value)
+        )->findOrFail($post);
 
         return PostResource::make($post);
     }
 
-    public function create(PostCreateRequest $request)
+    public function store(PostCreateRequest $request): PostResource
     {
-        $user = $request->user();
+        $profile = $request->user()->profile;
         $postParams = $request->validated();
 
-        $postParams["profile_id"] = $user->profile->id;
-        $post = Post::create($postParams);
-
+        $post = $profile->posts()->create($postParams);
         return PostResource::make($post);
     }
 
-    public function update(PostUpdateRequest $request)
+    public function update(PostUpdateRequest $request, string $postId): PostResource
     {
         $profile = $request->user()->profile;
         $postParams = $request->validated();
 
-        $query = Post::where(["id" => $postParams["id"], "profile_id" => $profile->id]);
-        if (!$query->update($postParams)) {
-            throw new NotFoundHttpException("Post not found");
-        }
+        $post = $profile->posts()->findOrFail($postId);
 
-        return PostResource::make($query->first());
+        $post->update($postParams);
+        return PostResource::make($post->refresh());
     }
 
-    public function delete(Request $request, $id)
+    public function delete(Request $request, string $postId): JsonResponse
     {
         $profile = $request->user()->profile;
-
-        if (!Post::where(["id" => $id, "profile_id" => $profile->id])->delete()) {
-            throw new NotFoundHttpException("Post not found");
-        }
+        $profile->posts()->findOrFail($postId)->delete();
 
         return response()->json(["status" => "ok"]);
     }

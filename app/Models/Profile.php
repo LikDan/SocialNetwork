@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
@@ -14,6 +15,10 @@ class Profile extends Model
 {
     use HasFactory;
 
+    public function subscribedProfiles(): BelongsToMany {
+        return $this->belongsToMany(Profile::class, "subscriptions", "from_profile_id", "to_profile_id")
+            ->wherePivot("status", SubscriptionStatus::Approved->value);
+    }
 
     public function subscriptions(): HasMany
     {

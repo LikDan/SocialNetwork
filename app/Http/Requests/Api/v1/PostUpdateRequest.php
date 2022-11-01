@@ -25,7 +25,6 @@ class PostUpdateRequest extends FormRequest
     public function rules()
     {
         return [
-            "id" => "int",
             "title" => "required|min:10|max:255",
             "text" => "nullable|string",
             "type" => "required|in:".join(",", array_map(fn($el) => $el->value, PostType::cases()))

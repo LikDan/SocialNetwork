@@ -32,11 +32,15 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('', 'updateProfile');
         Route::get('', 'index');
 
-        Route::prefix("{profile}")->group(function () {
-            Route::get('posts', [PostsController::class, 'profilePosts']);
 
+        Route::prefix("{profile}")->group(function () {
             Route::post('subscribe', [SubscriptionController::class, 'subscribe']);
             Route::delete('unsubscribe', [SubscriptionController::class, 'unsubscribe']);
+
+            Route::prefix("posts")->controller(PostsController::class)->group(function () {
+                Route::get("", 'index');
+                Route::get("{post}", 'show');
+            });
         });
     });
 
@@ -47,16 +51,14 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('', 'subscriptions');
     });
 
-    Route::get('subscribers', [SubscriptionController::class, 'subscribers']);
-
     Route::prefix("posts")->controller(PostsController::class)->group(function () {
-        Route::get("", 'index');
-        Route::get("feed", 'feed');
-        Route::get("{post}", 'get');
-        Route::post("", 'create');
-        Route::put("", 'update');
-        Route::delete("{id}", 'delete');
+        Route::post("", 'store');
+        Route::put("{postId}", 'update');
+        Route::delete("{postId}", 'delete');
     });
+
+    Route::get('subscribers', [SubscriptionController::class, 'subscribers']);
+    Route::get("feed", [PostsController::class, 'feed']);
 });
 
 

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\v1\AttachmentsController;
 use App\Http\Controllers\Api\v1\PostsController;
 use App\Http\Controllers\Api\v1\ProfileController;
 use App\Http\Controllers\Api\v1\StaticController;
@@ -40,6 +41,14 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::prefix("posts")->controller(PostsController::class)->group(function () {
                 Route::get("", 'index');
                 Route::get("{post}", 'show');
+                Route::post("", 'store');
+                Route::put("{postId}", 'update');
+                Route::delete("{postId}", 'delete');
+
+                Route::prefix("{postId}/attachments")->controller(AttachmentsController::class)->group(function () {
+                    Route::post("", 'store');
+                    Route::delete("{attachment}", 'delete');
+                });
             });
         });
     });
@@ -49,12 +58,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('{id}', 'removeSubscriber');
 
         Route::get('', 'subscriptions');
-    });
-
-    Route::prefix("posts")->controller(PostsController::class)->group(function () {
-        Route::post("", 'store');
-        Route::put("{postId}", 'update');
-        Route::delete("{postId}", 'delete');
     });
 
     Route::get('subscribers', [SubscriptionController::class, 'subscribers']);

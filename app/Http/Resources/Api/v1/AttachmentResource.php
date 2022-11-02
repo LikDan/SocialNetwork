@@ -3,8 +3,9 @@
 namespace App\Http\Resources\Api\v1;
 
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Storage;
 
-class PostResource extends JsonResource
+class AttachmentResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -16,11 +17,11 @@ class PostResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'profile_id' => $this->profile_id,
-            'title' => $this->title,
-            'text' => $this->text,
+            'path' => Storage::url($this->path),
+            'display_name' => $this->display_name,
             'type' => $this->type,
-            'attachments' => AttachmentResource::collection($this->whenLoaded('attachments')),
+            'entity_id' => $this->entity_id,
+            'entity_type' => $this->entity_type,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

@@ -58,7 +58,7 @@ class PostsController extends Controller
     /**
      * @throws NotFoundHttpException
      */
-    public function show(Request $request, string $profile, string $post): PostResource
+    public function show(Request $request, string $profile, string $post)
     {
         $myProfile = $request->user()->profile;
         $profile = (int)$profile;
@@ -72,32 +72,36 @@ class PostsController extends Controller
             fn(Builder $query) => $query->where('type', PostType::Published->value)
         )->findOrFail($post);
 
+        $post->load('attachments');
         return PostResource::make($post);
     }
 
-    public function store(PostCreateRequest $request): PostResource
+    public function store(PostCreateRequest $request, string $profileId): PostResource
     {
-        $profile = $request->user()->profile;
+        $profile = $request->user()->profile()->findOrFail($profileId);
         $postParams = $request->validated();
 
         $post = $profile->posts()->create($postParams);
+
         return PostResource::make($post);
     }
 
-    public function update(PostUpdateRequest $request, string $postId): PostResource
+    public function update(PostUpdateRequest $request, string $profileId, string $postId): PostResource
     {
-        $profile = $request->user()->profile;
+        $profile = $request->user()->profile()->findOrFail($profileId);
         $postParams = $request->validated();
 
         $post = $profile->posts()->findOrFail($postId);
 
         $post->update($postParams);
+
+        $post->load('attachments');
         return PostResource::make($post->refresh());
     }
 
-    public function delete(Request $request, string $postId): JsonResponse
+    public function delete(Request $request, string $profileId, string $postId): JsonResponse
     {
-        $profile = $request->user()->profile;
+        $profile = $request->user()->profile()->findOrFail($profileId);
         $profile->posts()->findOrFail($postId)->delete();
 
         return response()->json(["status" => "ok"]);

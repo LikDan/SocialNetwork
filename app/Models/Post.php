@@ -18,7 +18,7 @@ class Post extends Model
 
     public function attachments(): MorphMany
     {
-        return $this->morphMany(Attachment::class, 'entity');
+        return $this->morphMany(Attachment::class, 'attachable');
     }
 
     protected $fillable = [

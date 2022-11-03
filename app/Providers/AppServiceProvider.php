@@ -29,7 +29,7 @@ class AppServiceProvider extends ServiceProvider
     {
         Relation::enforceMorphMap([
             'posts' => Post::class,
-            'App\Models\User' => User::class
+            'users' => User::class
         ]);
 
         JsonResource::withoutWrapping();

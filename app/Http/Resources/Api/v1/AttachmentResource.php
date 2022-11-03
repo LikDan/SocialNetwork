@@ -20,8 +20,8 @@ class AttachmentResource extends JsonResource
             'path' => Storage::url($this->path),
             'display_name' => $this->display_name,
             'type' => $this->type,
-            'entity_id' => $this->entity_id,
-            'entity_type' => $this->entity_type,
+            'attachable_id' => $this->attachable_id,
+            'attachable_type' => $this->attachable_type,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

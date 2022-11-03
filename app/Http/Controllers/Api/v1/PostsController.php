@@ -20,21 +20,21 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class PostsController extends Controller
 {
-    public function index(PostTypeRequest $request, string $profile): AnonymousResourceCollection
+    public function index(PostTypeRequest $request, string $profileId): AnonymousResourceCollection
     {
         $myProfile = $request->user()->profile;
         $type = $request->validated();
-        $profile = (int)$profile;
+        $profileId = (int)$profileId;
 
-        $profile = $myProfile->id === $profile
+        $profileId = $myProfile->id === $profileId
             ? $myProfile
-            : $myProfile->subscribedProfiles()->findOrFail($profile);
+            : $myProfile->subscribedProfiles()->findOrFail($profileId);
 
-        $posts = $profile->posts()->when(
-            $profile->id !== $myProfile->id,
+        $posts = $profileId->posts()->when(
+            $profileId->id !== $myProfile->id,
             fn(Builder $query) => $query->where('type', PostType::Published->value)
         )->when(
-            $profile->id === $myProfile->id && $type["type"] ?? false,
+            $profileId->id === $myProfile->id && $type["type"] ?? false,
             fn(Builder $query) => $query->where('type', $type["type"])
         )->paginate();
 
@@ -58,22 +58,22 @@ class PostsController extends Controller
     /**
      * @throws NotFoundHttpException
      */
-    public function show(Request $request, string $profile, string $post)
+    public function show(Request $request, string $profileId, string $postId): PostResource
     {
         $myProfile = $request->user()->profile;
-        $profile = (int)$profile;
+        $profileId = (int)$profileId;
 
-        $profile = $myProfile->id === $profile
+        $profileId = $myProfile->id === $profileId
             ? $myProfile
-            : $myProfile->subscribedProfiles()->findOrFail($profile);
+            : $myProfile->subscribedProfiles()->findOrFail($profileId);
 
-        $post = $profile->posts()->when(
-            $profile->id !== $myProfile->id,
+        $postId = $profileId->posts()->when(
+            $profileId->id !== $myProfile->id,
             fn(Builder $query) => $query->where('type', PostType::Published->value)
-        )->findOrFail($post);
+        )->findOrFail($postId);
 
-        $post->load('attachments');
-        return PostResource::make($post);
+        $postId->load('attachments');
+        return PostResource::make($postId);
     }
 
     public function store(PostCreateRequest $request, string $profileId): PostResource

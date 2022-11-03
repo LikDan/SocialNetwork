@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('path');
             $table->string('display_name');
             $table->string('type');
-            $table->morphs('entity');
+            $table->morphs('attachable');
         });
     }
 

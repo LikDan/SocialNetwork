@@ -10,7 +10,7 @@ class Attachment extends Model
 {
     use HasFactory;
 
-    public function entity(): MorphTo
+    public function attachable(): MorphTo
     {
         return $this->morphTo();
     }

@@ -5,13 +5,13 @@ namespace App\Http\Controllers\Api\v1;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\v1\AttachmentRequest;
 use App\Http\Resources\Api\v1\AttachmentResource;
-use App\Models\Attachment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 class AttachmentsController extends Controller
 {
-    public function store(AttachmentRequest $request, string $profileId, string $postId)
+    public function store(AttachmentRequest $request, string $profileId, string $postId): JsonResponse | AttachmentResource
     {
         $profile = $request->user()->profile()->findOrFail($profileId);
         $profile->posts()->findOrFail($postId);
@@ -36,7 +36,7 @@ class AttachmentsController extends Controller
         return AttachmentResource::make($attachment);
     }
 
-    public function delete(Request $request, string $profileId, string $postId, string $attachment)
+    public function delete(Request $request, string $profileId, string $postId, string $attachment): JsonResponse
     {
         $profile = $request->user()->profile()->findOrFail($profileId);
         $profile->posts()->findOrFail($postId)->attachments()->findOrFail($attachment)->delete();

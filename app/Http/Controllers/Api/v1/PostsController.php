@@ -9,7 +9,6 @@ use App\Http\Requests\Api\v1\PostUpdateRequest;
 use App\Http\Resources\Api\v1\PostResource;
 use App\Models\Post;
 use App\Models\PostType;
-use App\Models\Profile;
 use App\Models\Subscription;
 use App\Models\SubscriptionStatus;
 use Illuminate\Database\Eloquent\Builder;
@@ -22,36 +21,27 @@ class PostsController extends Controller
 {
     public function index(PostTypeRequest $request, string $profileId): AnonymousResourceCollection
     {
-        $myProfile = $request->user()->profile;
-        $type = $request->validated();
-        $profileId = (int)$profileId;
+        $posts = Post::availablePosts()->where("profile_id", $profileId)->paginate();
 
-        $profileId = $myProfile->id === $profileId
-            ? $myProfile
-            : $myProfile->subscribedProfiles()->findOrFail($profileId);
-
-        $posts = $profileId->posts()->when(
-            $profileId->id !== $myProfile->id,
-            fn(Builder $query) => $query->where('type', PostType::Published->value)
-        )->when(
-            $profileId->id === $myProfile->id && $type["type"] ?? false,
-            fn(Builder $query) => $query->where('type', $type["type"])
-        )->paginate();
+        $posts->load('attachments');
+        $posts->loadCount('likedProfiles');
+        $posts->loadCount('likedCurrentProfiles');
 
         return PostResource::collection($posts);
     }
 
-    public function feed(Request $request): AnonymousResourceCollection
+    public function feed(Request $request)
     {
         $profile = $request->user()->profile;
-        $posts = Subscription::select("posts.*")
-            ->join('profiles', 'profiles.id', '=', 'subscriptions.to_profile_id')
-            ->join("posts", "profiles.id", "=", "posts.profile_id")
-            ->where("from_profile_id", $profile["id"])
-            ->where("status", SubscriptionStatus::Approved->value)
-            ->where("posts.type", PostType::Published->value)
-            ->orderBy("posts.created_at")
+        $posts = Post::query()
+            ->where(["type" => PostType::Published->value])
+            ->whereHas("ownerSubscribers", fn($query) => $query->where("from_profile_id", $profile->id))
+            ->orderBy("created_at")
             ->paginate();
+
+        $posts->load('attachments');
+        $posts->loadCount('likedProfiles');
+        $posts->loadCount('likedCurrentProfiles');
         return PostResource::collection($posts);
     }
 
@@ -60,20 +50,12 @@ class PostsController extends Controller
      */
     public function show(Request $request, string $profileId, string $postId): PostResource
     {
-        $myProfile = $request->user()->profile;
-        $profileId = (int)$profileId;
+        $post = Post::availablePosts()->where("profile_id", $profileId)->findOrFail($postId);
 
-        $profileId = $myProfile->id === $profileId
-            ? $myProfile
-            : $myProfile->subscribedProfiles()->findOrFail($profileId);
-
-        $postId = $profileId->posts()->when(
-            $profileId->id !== $myProfile->id,
-            fn(Builder $query) => $query->where('type', PostType::Published->value)
-        )->findOrFail($postId);
-
-        $postId->load('attachments');
-        return PostResource::make($postId);
+        $post->load('attachments');
+        $post->loadCount('likedProfiles');
+        $post->loadCount('likedCurrentProfiles');
+        return PostResource::make($post);
     }
 
     public function store(PostCreateRequest $request, string $profileId): PostResource

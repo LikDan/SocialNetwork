@@ -21,6 +21,8 @@ class PostResource extends JsonResource
             'text' => $this->text,
             'type' => $this->type,
             'attachments' => AttachmentResource::collection($this->whenLoaded('attachments')),
+            'likes_amount' => $this->whenCounted('liked_profiles_count'),
+            'is_liked' => (bool) $this->whenCounted('liked_current_profiles_count'),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

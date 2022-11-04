@@ -37,8 +37,6 @@ class AttachmentsController extends Controller
 
     public function delete(Request $request, string $profileId, string $postId, string $attachmentId): JsonResponse
     {
-        echo Storage::delete("attachments/file.txt");
-
         $profile = $request->user()->profile()->findOrFail($profileId);
         $attachment = $profile->posts()->findOrFail($postId)->attachments()->findOrFail($attachmentId);
         Storage::delete($attachment->path);

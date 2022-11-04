@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 
 /**
@@ -13,12 +14,12 @@ class Subscription extends Model
 {
     use HasFactory;
 
-    public function fromProfile()
+    public function fromProfile(): BelongsTo
     {
         return $this->belongsTo(Profile::class, "from_profile_id");
     }
 
-    public function toProfile()
+    public function toProfile(): BelongsTo
     {
         return $this->belongsTo(Profile::class, "to_profile_id");
     }

@@ -7,13 +7,13 @@ use Illuminate\Foundation\Http\FormRequest;
 class AttachmentRequest extends FormRequest
 {
 
-    public function authorize()
+    public function authorize(): bool
     {
         return true;
     }
 
 
-    public function rules()
+    public function rules(): array
     {
         return [
             "file" => 'required|file|mimetypes:image/gif,audio/mpeg,audio/mpeg,video/mpeg,image/png,image/jpeg',

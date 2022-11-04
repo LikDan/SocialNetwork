@@ -11,7 +11,7 @@ class AvatarRequest extends FormRequest
      *
      * @return bool
      */
-    public function authorize()
+    public function authorize(): bool
     {
         return true;
     }
@@ -21,7 +21,7 @@ class AvatarRequest extends FormRequest
      *
      * @return array<string, mixed>
      */
-    public function rules()
+    public function rules(): array
     {
         return [
             "avatar" => "required|file|mimetypes:image/jpeg,image/png,image/gif"

@@ -39,9 +39,9 @@ class AttachmentsController extends Controller
     {
         $profile = $request->user()->profile()->findOrFail($profileId);
         $attachment = $profile->posts()->findOrFail($postId)->attachments()->findOrFail($attachmentId);
-        Storage::delete($attachment->path);
 
-        if (!$attachment->delete()) throw new NotFoundHttpException();
+        Storage::delete($attachment->path);
+        $attachment->delete();
 
         return response()->json(["status" => "ok"]);
     }

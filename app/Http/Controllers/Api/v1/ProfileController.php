@@ -49,8 +49,13 @@ class ProfileController extends Controller
         $profile = $request->user()->profile;
 
         $perPage = $request->per_page ?? 20;
+        $profiles = Profile::query()
+            ->whereDoesntHave('subscriptions', fn(Builder $query) => $query
+                ->where('from_profile_id', $profile->id)
+            )
+            ->paginate($perPage)
+            ->appends($request->validated());
 
-        $profiles = Profile::whereDoesntHave('subscriptions', fn(Builder $query) => $query->where('from_profile_id', $profile->id))->paginate($perPage)->appends($request->validated());
         return ShortProfileResource::collection($profiles);
     }
 }

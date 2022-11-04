@@ -9,7 +9,6 @@ use App\Http\Requests\Api\v1\PostUpdateRequest;
 use App\Http\Resources\Api\v1\PostResource;
 use App\Models\Post;
 use App\Models\PostType;
-use App\Models\Profile;
 use App\Models\Subscription;
 use App\Models\SubscriptionStatus;
 use Illuminate\Database\Eloquent\Builder;
@@ -60,20 +59,12 @@ class PostsController extends Controller
      */
     public function show(Request $request, string $profileId, string $postId): PostResource
     {
-        $myProfile = $request->user()->profile;
-        $profileId = (int)$profileId;
+        $post = Post::availablePosts()->where("profile_id", $profileId)->findOrFail($postId);
 
-        $profileId = $myProfile->id === $profileId
-            ? $myProfile
-            : $myProfile->subscribedProfiles()->findOrFail($profileId);
-
-        $postId = $profileId->posts()->when(
-            $profileId->id !== $myProfile->id,
-            fn(Builder $query) => $query->where('type', PostType::Published->value)
-        )->findOrFail($postId);
-
-        $postId->load('attachments');
-        return PostResource::make($postId);
+        $post->load('attachments');
+        $post->loadCount('likedProfiles');
+        $post->loadCount('likedCurrentProfiles');
+        return PostResource::make($post);
     }
 
     public function store(PostCreateRequest $request, string $profileId): PostResource

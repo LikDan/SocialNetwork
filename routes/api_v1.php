@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\v1\AttachmentsController;
+use App\Http\Controllers\Api\v1\LikesController;
 use App\Http\Controllers\Api\v1\PostsController;
 use App\Http\Controllers\Api\v1\ProfileController;
 use App\Http\Controllers\Api\v1\StaticController;
@@ -48,6 +49,11 @@ Route::middleware('auth:sanctum')->group(function () {
                 Route::prefix("{postId}/attachments")->controller(AttachmentsController::class)->group(function () {
                     Route::post("", 'store');
                     Route::delete("{attachment}", 'delete');
+                });
+
+                Route::prefix("{post}/likes")->controller(LikesController::class)->group(function () {
+                    Route::get("", 'index');
+                    Route::post("", 'toggle');
                 });
             });
         });

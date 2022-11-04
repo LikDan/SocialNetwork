@@ -40,6 +40,9 @@ class Profile extends Model
         'birthday',
         'is_private',
         'picture_path',
+    ];
+
+    protected $hidden = [
         'user_id',
     ];
 }

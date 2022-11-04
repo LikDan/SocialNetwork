@@ -15,7 +15,6 @@ class ProfileResource extends JsonResource
             'picture_path' => Storage::url($this->picture_path),
             'birthday' => $this->birthday,
             'is_private' => $this->is_private,
-            'user_id' => $this->user_id,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

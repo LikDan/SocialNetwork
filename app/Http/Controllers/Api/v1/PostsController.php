@@ -21,36 +21,27 @@ class PostsController extends Controller
 {
     public function index(PostTypeRequest $request, string $profileId): AnonymousResourceCollection
     {
-        $myProfile = $request->user()->profile;
-        $type = $request->validated();
-        $profileId = (int)$profileId;
+        $posts = Post::availablePosts()->where("profile_id", $profileId)->paginate();
 
-        $profileId = $myProfile->id === $profileId
-            ? $myProfile
-            : $myProfile->subscribedProfiles()->findOrFail($profileId);
-
-        $posts = $profileId->posts()->when(
-            $profileId->id !== $myProfile->id,
-            fn(Builder $query) => $query->where('type', PostType::Published->value)
-        )->when(
-            $profileId->id === $myProfile->id && $type["type"] ?? false,
-            fn(Builder $query) => $query->where('type', $type["type"])
-        )->paginate();
+        $posts->load('attachments');
+        $posts->loadCount('likedProfiles');
+        $posts->loadCount('likedCurrentProfiles');
 
         return PostResource::collection($posts);
     }
 
-    public function feed(Request $request): AnonymousResourceCollection
+    public function feed(Request $request)
     {
         $profile = $request->user()->profile;
-        $posts = Subscription::select("posts.*")
-            ->join('profiles', 'profiles.id', '=', 'subscriptions.to_profile_id')
-            ->join("posts", "profiles.id", "=", "posts.profile_id")
-            ->where("from_profile_id", $profile["id"])
-            ->where("status", SubscriptionStatus::Approved->value)
-            ->where("posts.type", PostType::Published->value)
-            ->orderBy("posts.created_at")
+        $posts = Post::query()
+            ->where(["type" => PostType::Published->value])
+            ->whereHas("ownerSubscribers", fn($query) => $query->where("from_profile_id", $profile->id))
+            ->orderBy("created_at")
             ->paginate();
+
+        $posts->load('attachments');
+        $posts->loadCount('likedProfiles');
+        $posts->loadCount('likedCurrentProfiles');
         return PostResource::collection($posts);
     }
 

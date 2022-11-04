@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Notifications\Notifiable;
@@ -38,6 +39,14 @@ class Post extends Model
     public function profile(): BelongsTo
     {
         return $this->belongsTo(Profile::class, "profile_id");
+    }
+
+
+    public function ownerSubscribers(): HasMany
+    {
+        return $this
+            ->hasMany(Subscription::class, "to_profile_id", "profile_id")
+            ->where("status", SubscriptionStatus::Approved->value);
     }
 
     public function scopeAvailablePosts(Builder $query): Builder

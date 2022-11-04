@@ -22,12 +22,12 @@ class Profile extends Model
 
     public function subscriptions(): HasMany
     {
-        return $this->hasMany(Subscription::class, "from_profile_id");
+        return $this->hasMany(Subscription::class, "to_profile_id");
     }
 
     public function subscribers(): HasMany
     {
-        return $this->hasMany(Subscription::class, "to_profile_id");
+        return $this->hasMany(Subscription::class, "from_profile_id");
     }
 
     public function posts(): HasMany

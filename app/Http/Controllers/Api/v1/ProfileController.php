@@ -18,11 +18,10 @@ class ProfileController extends Controller
 {
     public function addPicture(AvatarRequest $request): JsonResponse
     {
-        $user = $request->user();
         $avatar = $request->file("avatar");
 
         $file = Storage::putFile('avatars', $avatar);
-        $user->profile()->update(["picture_path" => $file]);
+        $request->user()->profile()->update(["picture_path" => $file]);
 
         return response()->json(["url" => Storage::url($file)]);
     }
@@ -36,7 +35,9 @@ class ProfileController extends Controller
 
 
         if (!$profileParams["is_private"])
-            $user->profile->subscribers()
+            $user
+                ->profile
+                ->subscribers()
                 ->where("status", SubscriptionStatus::Pending->value)
                 ->update(["status" => SubscriptionStatus::Approved->value]);
 
@@ -46,15 +47,16 @@ class ProfileController extends Controller
 
     public function index(ProfilesIndexRequest $request)
     {
-        $profile = $request->user()->profile;
+        $profileId = $request->user()->profile->id;
+        $request = $request->validated();
 
         $perPage = $request->per_page ?? 20;
         $profiles = Profile::query()
             ->whereDoesntHave('subscriptions', fn(Builder $query) => $query
-                ->where('from_profile_id', $profile->id)
+                ->where('from_profile_id', $profileId)
             )
             ->paginate($perPage)
-            ->appends($request->validated());
+            ->appends($request);
 
         return ShortProfileResource::collection($profiles);
     }

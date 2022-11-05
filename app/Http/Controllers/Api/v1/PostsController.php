@@ -18,7 +18,10 @@ class PostsController extends Controller
 {
     public function index(PostTypeRequest $request, string $profileId): AnonymousResourceCollection
     {
-        $posts = Post::availablePosts()->where("profile_id", $profileId)->paginate();
+        $posts = Post::availablePosts()
+            ->whereProfileId($profileId)
+            ->whereType($request["type"] ?? PostType::Published->value)
+            ->paginate();
 
         $posts->load('attachments');
         $posts->loadCount('likedProfiles');
@@ -31,7 +34,7 @@ class PostsController extends Controller
     {
         $profile = $request->user()->profile;
         $posts = Post::query()
-            ->where(["type" => PostType::Published->value])
+            ->whereType(PostType::Published->value)
             ->whereHas("ownerSubscribers", fn($query) => $query->where("from_profile_id", $profile->id))
             ->orderBy("created_at")
             ->paginate();
@@ -47,7 +50,7 @@ class PostsController extends Controller
      */
     public function show(Request $request, string $profileId, string $postId): PostResource
     {
-        $post = Post::availablePosts()->where("profile_id", $profileId)->findOrFail($postId);
+        $post = Post::availablePosts()->whereProfileId($profileId)->findOrFail($postId);
 
         $post->load('attachments');
         $post->loadCount('likedProfiles');
@@ -57,20 +60,28 @@ class PostsController extends Controller
 
     public function store(PostCreateRequest $request, string $profileId): PostResource
     {
-        $profile = $request->user()->profile()->findOrFail($profileId);
         $postParams = $request->validated();
 
-        $post = $profile->posts()->create($postParams);
+        $post = $request
+            ->user()
+            ->profile()
+            ->findOrFail($profileId)
+            ->posts()
+            ->create($postParams);
 
         return PostResource::make($post);
     }
 
     public function update(PostUpdateRequest $request, string $profileId, string $postId): PostResource
     {
-        $profile = $request->user()->profile()->findOrFail($profileId);
         $postParams = $request->validated();
 
-        $post = $profile->posts()->findOrFail($postId);
+        $post = $request
+            ->user()
+            ->profile()
+            ->findOrFail($profileId)
+            ->posts()
+            ->findOrFail($postId);
 
         $post->update($postParams);
 
@@ -80,8 +91,13 @@ class PostsController extends Controller
 
     public function delete(Request $request, string $profileId, string $postId): JsonResponse
     {
-        $profile = $request->user()->profile()->findOrFail($profileId);
-        $profile->posts()->findOrFail($postId)->delete();
+        $request
+            ->user()
+            ->profile()
+            ->findOrFail($profileId)
+            ->posts()
+            ->findOrFail($postId)
+            ->delete();
 
         return response()->json(["status" => "ok"]);
     }

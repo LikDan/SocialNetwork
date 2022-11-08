@@ -9,7 +9,37 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
+ * App\Models\Profile
+ *
  * @method static create(mixed $profile)
+ * @property int $id
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property string $nickname
+ * @property string $picture_path
+ * @property int $is_private
+ * @property string $birthday
+ * @property int $user_id
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Post[] $posts
+ * @property-read int|null $posts_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|Profile[] $subscribedProfiles
+ * @property-read int|null $subscribed_profiles_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Subscription[] $subscribers
+ * @property-read int|null $subscribers_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Subscription[] $subscriptions
+ * @property-read int|null $subscriptions_count
+ * @method static \Illuminate\Database\Eloquent\Builder|Profile newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|Profile newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|Profile query()
+ * @method static \Illuminate\Database\Eloquent\Builder|Profile whereBirthday($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Profile whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Profile whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Profile whereIsPrivate($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Profile whereNickname($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Profile wherePicturePath($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Profile whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Profile whereUserId($value)
+ * @mixin \Eloquent
  */
 class Profile extends Model
 {

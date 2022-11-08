@@ -9,9 +9,6 @@ use App\Http\Requests\Api\v1\PostUpdateRequest;
 use App\Http\Resources\Api\v1\PostResource;
 use App\Models\Post;
 use App\Models\PostType;
-use App\Models\Subscription;
-use App\Models\SubscriptionStatus;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -21,7 +18,10 @@ class PostsController extends Controller
 {
     public function index(PostTypeRequest $request, string $profileId): AnonymousResourceCollection
     {
-        $posts = Post::availablePosts()->where("profile_id", $profileId)->paginate();
+        $posts = Post::availablePosts()
+            ->whereProfileId($profileId)
+            ->where(["type" => $request["type"] ?? PostType::Published->value])
+            ->paginate();
 
         $posts->load('attachments');
         $posts->loadCount('likedProfiles');
@@ -50,7 +50,7 @@ class PostsController extends Controller
      */
     public function show(Request $request, string $profileId, string $postId): PostResource
     {
-        $post = Post::availablePosts()->where("profile_id", $profileId)->findOrFail($postId);
+        $post = Post::availablePosts()->where(["profile_id" => $profileId])->findOrFail($postId);
 
         $post->load('attachments');
         $post->loadCount('likedProfiles');
@@ -60,20 +60,28 @@ class PostsController extends Controller
 
     public function store(PostCreateRequest $request, string $profileId): PostResource
     {
-        $profile = $request->user()->profile()->findOrFail($profileId);
         $postParams = $request->validated();
 
-        $post = $profile->posts()->create($postParams);
+        $post = $request
+            ->user()
+            ->profile()
+            ->findOrFail($profileId)
+            ->posts()
+            ->create($postParams);
 
         return PostResource::make($post);
     }
 
     public function update(PostUpdateRequest $request, string $profileId, string $postId): PostResource
     {
-        $profile = $request->user()->profile()->findOrFail($profileId);
         $postParams = $request->validated();
 
-        $post = $profile->posts()->findOrFail($postId);
+        $post = $request
+            ->user()
+            ->profile()
+            ->findOrFail($profileId)
+            ->posts()
+            ->findOrFail($postId);
 
         $post->update($postParams);
 
@@ -83,8 +91,13 @@ class PostsController extends Controller
 
     public function delete(Request $request, string $profileId, string $postId): JsonResponse
     {
-        $profile = $request->user()->profile()->findOrFail($profileId);
-        $profile->posts()->findOrFail($postId)->delete();
+        $request
+            ->user()
+            ->profile()
+            ->findOrFail($profileId)
+            ->posts()
+            ->findOrFail($postId)
+            ->delete();
 
         return response()->json(["status" => "ok"]);
     }

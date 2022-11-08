@@ -16,23 +16,32 @@ class SubscriptionController extends Controller
 {
     public function subscriptions(StatusQueryRequest $request): AnonymousResourceCollection
     {
-        $user = $request->user();
         $status = $request->validated();
 
-        $subscriptions = $user->profile->subscriptions()
-            ->when($status["status"] ?? null, fn(Builder $query, string $status) => $query->where("status", $status))
+        $subscriptions = $request
+            ->user()
+            ->profile
+            ->subscriptions()
+            ->when($status["status"] ?? null, fn(Builder $query, string $status) => $query
+                ->where("status", $status)
+            )
             ->with('toProfile')->paginate();
         return SubscriptionResource::collection($subscriptions);
     }
 
     public function subscribers(StatusQueryRequest $request): AnonymousResourceCollection
     {
-        $user = $request->user();
         $status = $request->validated();
 
-        $subscriptions = $user->profile->subscribers()
-            ->when($status->status, fn(Builder $query, string $status) => $query->where("status", $status))
+        $subscriptions = $request
+            ->user()
+            ->profile
+            ->subscribers()
+            ->when($status->status, fn(Builder $query, string $status) => $query
+                ->where("status", $status)
+            )
             ->with('fromProfile')->paginate();
+
         return SubscriptionResource::collection($subscriptions);
     }
 
@@ -42,32 +51,49 @@ class SubscriptionController extends Controller
         $user = $request->user();
 
         $status = $profile->is_private ? SubscriptionStatus::Pending->value : SubscriptionStatus::Approved->value;
-        $subscription = $user->profile->subscriptions()->firstOrCreate(["to_profile_id" => $profile->id], ["status" => $status]);
+        $subscription = $user
+            ->profile
+            ->subscriptions()
+            ->firstOrCreate(["to_profile_id" => $profile->id], ["status" => $status]);
 
         return SubscriptionResource::make($subscription);
     }
 
     public function unsubscribe(Request $request, Profile $profile): JsonResponse
     {
-        $user = $request->user();
+        $request
+            ->user()
+            ->profile
+            ->subscriptions()
+            ->where(["to_profile_id" => $profile->id])
+            ->firstOrFail()
+            ->delete();
 
-        $user->profile->subscriptions()->where("to_profile_id", $profile->id)->firstOrFail()->delete();
         return response()->json(["status" => "ok"]);
     }
 
     public function updateStatus(StatusQueryRequest $request, string $id)
     {
-        $user = $request->user();
-        $status = $request->validated();
+        $request
+            ->user()
+            ->profile
+            ->subscribers()
+            ->where("from_profile_id", $id)
+            ->firstOrFail()
+            ->update($request["status"]);
 
-        $user->profile->subscribers()->where("from_profile_id", $id)->firstOrFail()->update($status);
-        return $status->status;
+        return $request["status"];
     }
 
     private function removeSubscriber(Request $request, string $id) {
-        $user = $request->user();
+        $request
+            ->user()
+            ->profile
+            ->subscribers()
+            ->where(["from_profile_id" => $id])
+            ->firstOrFail()
+            ->delete();
 
-        $user->profile->subscribers()->where("from_profile_id", $id)->firstOrFail()->delete();
         return response()->json(["status" => "ok"]);
     }
 }

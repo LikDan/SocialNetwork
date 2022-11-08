@@ -13,7 +13,7 @@ class StatusQueryRequest extends FormRequest
      *
      * @return bool
      */
-    public function authorize()
+    public function authorize(): bool
     {
         return true;
     }
@@ -23,7 +23,7 @@ class StatusQueryRequest extends FormRequest
      *
      * @return array<string, mixed>
      */
-    public function rules()
+    public function rules(): array
     {
         return [
             "status" => "in:".join(",", array_map(fn($el) => $el->value, SubscriptionStatus::cases()))

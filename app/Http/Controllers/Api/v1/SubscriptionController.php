@@ -65,7 +65,7 @@ class SubscriptionController extends Controller
             ->user()
             ->profile
             ->subscriptions()
-            ->whereToProfileId($profile->id)
+            ->where(["to_profile_id" => $profile->id])
             ->firstOrFail()
             ->delete();
 
@@ -90,7 +90,7 @@ class SubscriptionController extends Controller
             ->user()
             ->profile
             ->subscribers()
-            ->whereFromProfileId($id)
+            ->where(["from_profile_id" => $id])
             ->firstOrFail()
             ->delete();
 

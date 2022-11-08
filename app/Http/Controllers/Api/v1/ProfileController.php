@@ -33,7 +33,6 @@ class ProfileController extends Controller
 
         $user->profile()->update($profileParams);
 
-
         if (!$profileParams["is_private"])
             $user
                 ->profile

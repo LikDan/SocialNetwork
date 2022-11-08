@@ -13,7 +13,9 @@ class AttachmentsController extends Controller
 {
     public function store(AttachmentRequest $request, string $profileId, string $postId): JsonResponse | AttachmentResource
     {
-        $post = $request->user()->profile()->findOrFail($profileId)->posts()->findOrFail($postId);
+        $user = $request->user();
+        $profile = $user->profile()->findOrFail($profileId);
+        $post = $profile->posts()->findOrFail($postId);
 
         $max_attachments = config("custom.max_attachments");
         if ($post->attachments()->count() >= $max_attachments)

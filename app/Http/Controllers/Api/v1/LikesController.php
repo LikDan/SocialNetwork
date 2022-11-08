@@ -37,7 +37,7 @@ class LikesController extends Controller
     {
         $myProfile = $request->user()->profile;
 
-        $post = Post::availablePosts()->whereProfileId($profileId)->findOrFail($postId);
+        $post = Post::availablePosts()->where(["profile_id" => $profileId])->findOrFail($postId);
 
         $status = (bool) $post->likedProfiles()->toggle($myProfile->id)["attached"];
         return response()->json(["is_liked" => $status]);

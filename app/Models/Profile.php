@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -28,17 +29,17 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property-read int|null $subscribers_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Subscription[] $subscriptions
  * @property-read int|null $subscriptions_count
- * @method static \Illuminate\Database\Eloquent\Builder|Profile newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|Profile newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|Profile query()
- * @method static \Illuminate\Database\Eloquent\Builder|Profile whereBirthday($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Profile whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Profile whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Profile whereIsPrivate($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Profile whereNickname($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Profile wherePicturePath($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Profile whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Profile whereUserId($value)
+ * @method static Builder|Profile newModelQuery()
+ * @method static Builder|Profile newQuery()
+ * @method static Builder|Profile query()
+ * @method static Builder|Profile whereBirthday($value)
+ * @method static Builder|Profile whereCreatedAt($value)
+ * @method static Builder|Profile whereId($value)
+ * @method static Builder|Profile whereIsPrivate($value)
+ * @method static Builder|Profile whereNickname($value)
+ * @method static Builder|Profile wherePicturePath($value)
+ * @method static Builder|Profile whereUpdatedAt($value)
+ * @method static Builder|Profile whereUserId($value)
  * @mixin \Eloquent
  */
 class Profile extends Model
@@ -52,17 +53,22 @@ class Profile extends Model
 
     public function subscriptions(): HasMany
     {
-        return $this->hasMany(Subscription::class, "to_profile_id");
+        return $this->hasMany(Subscription::class, "from_profile_id");
     }
 
     public function subscribers(): HasMany
     {
-        return $this->hasMany(Subscription::class, "from_profile_id");
+        return $this->hasMany(Subscription::class, "to_profile_id");
     }
 
     public function posts(): HasMany
     {
         return $this->hasMany(Post::class);
+    }
+
+    public function messagesToMe(): HasMany
+    {
+        return $this->hasMany(Message::class, "to_profile_id");
     }
 
     protected $fillable = [

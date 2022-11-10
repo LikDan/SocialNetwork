@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\v1\AttachmentsController;
 use App\Http\Controllers\Api\v1\LikesController;
+use App\Http\Controllers\Api\v1\MessagesController;
 use App\Http\Controllers\Api\v1\PostsController;
 use App\Http\Controllers\Api\v1\ProfileController;
 use App\Http\Controllers\Api\v1\StaticController;
@@ -55,6 +56,12 @@ Route::middleware('auth:sanctum')->group(function () {
                     Route::get("", 'index');
                     Route::post("", 'toggle');
                 });
+            });
+
+            Route::prefix("messages")->controller(MessagesController::class)->group(function () {
+                Route::get("", "index");
+                Route::post("", "store");
+                Route::delete("{id}", "delete");
             });
         });
     });

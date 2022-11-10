@@ -37,7 +37,7 @@ class SubscriptionController extends Controller
             ->user()
             ->profile
             ->subscribers()
-            ->when($status->status, fn(Builder $query, string $status) => $query
+            ->when($status["status"] ?? null, fn(Builder $query, string $status) => $query
                 ->where("status", $status)
             )
             ->with('fromProfile')->paginate();

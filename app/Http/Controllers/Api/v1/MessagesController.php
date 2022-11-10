@@ -43,7 +43,7 @@ class MessagesController extends Controller
         $message = MessageResource::make($message);
         event(new ProfileEvent($toProfile, $message->resolve(), "new_message", "New message"));
 
-        return MessageResource::make($message);
+        return $message;
     }
 
     public function delete(Request $request, string $toProfileID, string $messageID)

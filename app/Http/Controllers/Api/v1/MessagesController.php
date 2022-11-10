@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\v1;
 
+use App\Events\MessageEvent;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\v1\CreateMessageRequest;
 use App\Http\Resources\Api\v1\MessageResource;
@@ -36,6 +37,8 @@ class MessagesController extends Controller
             ->firstOrFail()
             ->messagesToMe()
             ->create($message);
+
+        event(new MessageEvent($message));
 
         return MessageResource::make($message);
     }

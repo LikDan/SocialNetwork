@@ -1,6 +1,6 @@
 <?php
 
-use App\Events\MessageEvent;
+use App\Events\ProfileEvent;
 use Illuminate\Support\Facades\Broadcast;
 
 /*
@@ -14,4 +14,4 @@ use Illuminate\Support\Facades\Broadcast;
 |
 */
 
-Broadcast::channel('message.{fromID}.{toID}', MessageEvent::class);
+Broadcast::channel('profiles.{id}', ProfileEvent::class);

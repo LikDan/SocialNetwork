@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api\v1;
 
-use App\Events\MessageEvent;
+use App\Events\ProfileEvent;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\v1\CreateMessageRequest;
 use App\Http\Resources\Api\v1\MessageResource;
@@ -32,13 +32,16 @@ class MessagesController extends Controller
         $message = $request->validated();
         $message["from_profile_id"] = $profile->id;
 
-        $message = $profile->subscribedProfiles()
+        $toProfile = $profile->subscribedProfiles()
             ->wherePivot("to_profile_id", $toProfileID)
-            ->firstOrFail()
+            ->firstOrFail();
+
+        $message = $toProfile
             ->messagesToMe()
             ->create($message);
 
-        event(new MessageEvent($message));
+        $message = MessageResource::make($message);
+        event(new ProfileEvent($toProfile, $message->resolve(), "new_message", "New message"));
 
         return MessageResource::make($message);
     }
@@ -47,13 +50,12 @@ class MessagesController extends Controller
     {
         $profile = $request->user()->profile;
 
-        $deleteCount = Message::query()
+        Message::query()
             ->where("from_profile_id", $profile->id)
             ->where("to_profile_id", $toProfileID)
-            ->where("id", $messageID)
+            ->findOrFail($messageID)
             ->delete();
 
-        if ($deleteCount == 0) throw new NotFoundHttpException();
         return response()->json(["status" => "ok"]);
     }
 }

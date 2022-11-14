@@ -8,6 +8,7 @@ use App\Http\Requests\Api\v1\CreateMessageRequest;
 use App\Http\Requests\Api\v1\MessagesIndexRequest;
 use App\Http\Resources\Api\v1\MessageResource;
 use App\Models\Message;
+use App\Models\Profile;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Database\Eloquent\Builder;
@@ -47,17 +48,17 @@ class MessagesController extends Controller
             ->create($message);
 
         $message = MessageResource::make($message);
-        $profile->notify(new ProfileEvent($message->resolve(), "new_message", "New message"));
+        $toProfile->notify(new ProfileEvent($message->resolve(), "new_message", "New message"));
         return $message;
     }
 
-    public function destroy(Request $request, string $toProfileID, string $messageID): Application|ResponseFactory|Response
+    public function destroy(Request $request, Profile $profile, string $messageID): Application|ResponseFactory|Response
     {
-        $profile = $request->user()->profile;
+        $myProfile = $request->user()->profile;
 
         Message::query()
-            ->where("from_profile_id", $profile->id)
-            ->where("to_profile_id", $toProfileID)
+            ->where("from_profile_id", $myProfile->id)
+            ->where("to_profile_id", $profile->id)
             ->findOrFail($messageID)
             ->delete();
 

@@ -22,13 +22,11 @@ class PostsController extends Controller
     public function index(PostTypeRequest $request, string $profileId): AnonymousResourceCollection
     {
         $posts = Post::availablePosts()
-            ->whereProfileId($profileId)
+            ->where(["profile_id" => $profileId])
             ->where(["type" => $request["type"] ?? PostType::Published->value])
-            ->paginate();
-
-        $posts->load('attachments');
-        $posts->loadCount('likedProfiles');
-        $posts->loadCount('likedCurrentProfiles');
+            ->with('attachments')
+            ->withCount(['likedProfiles', 'likedCurrentProfiles'])
+            ->paginateBy($request->validated());
 
         return PostResource::collection($posts);
     }
@@ -40,11 +38,10 @@ class PostsController extends Controller
             ->where(["type" => PostType::Published->value])
             ->whereHas("ownerSubscribers", fn($query) => $query->where("from_profile_id", $profile->id))
             ->orderBy("created_at")
-            ->paginate();
+            ->with("attachments")
+            ->withCount(["likedProfiles", "likedCurrentProfiles"])
+            ->paginateBy($request);
 
-        $posts->load('attachments');
-        $posts->loadCount('likedProfiles');
-        $posts->loadCount('likedCurrentProfiles');
         return PostResource::collection($posts);
     }
 

@@ -9,7 +9,8 @@ class MessagesIndexRequest extends FormRequest
     public function rules()
     {
         return [
-            "per_page" => 'integer|between:0,100'
+            "per_page" => 'integer|between:0,100',
+            "from" => 'integer'
         ];
     }
 }

@@ -10,6 +10,7 @@ use App\Http\Resources\Api\v1\MessageResource;
 use App\Models\Message;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\Routing\ResponseFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -21,13 +22,12 @@ class MessagesController extends Controller
         $profile = $request->user()->profile;
         $request = $request->validated();
 
-        $perPage = $request["per_page"] ?? 20;
         $messages = Message::query()
-            ->where(["from_profile_id" => $profile->id, "to_profile_id" => $toProfileID])
-            ->orWhere(["to_profile_id" => $profile->id, "from_profile_id" => $toProfileID])
-            ->orderByDesc("created_at")
-            ->paginate($perPage)
-            ->appends($request);
+            ->where(fn(Builder $builder) => $builder
+                ->where(["from_profile_id" => $profile->id, "to_profile_id" => $toProfileID])
+                ->orWhere(["to_profile_id" => $profile->id, "from_profile_id" => $toProfileID])
+            )
+            ->paginateBy($request, true);
 
         return MessageResource::collection($messages);
     }

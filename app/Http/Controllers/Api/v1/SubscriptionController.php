@@ -19,31 +19,31 @@ class SubscriptionController extends Controller
 {
     public function subscriptions(StatusQueryRequest $request): AnonymousResourceCollection
     {
-        $status = $request->validated();
+        $request = $request->validated();
 
         $subscriptions = $request
             ->user()
             ->profile
             ->subscriptions()
-            ->when($status["status"] ?? null, fn(Builder $query, string $status) => $query
+            ->when($request["status"] ?? null, fn(Builder $query, string $status) => $query
                 ->where("status", $status)
             )
-            ->with('toProfile')->paginate();
+            ->with('toProfile')->paginateBy($request);
         return SubscriptionResource::collection($subscriptions);
     }
 
     public function subscribers(StatusQueryRequest $request): AnonymousResourceCollection
     {
-        $status = $request->validated();
+        $request = $request->validated();
 
         $subscriptions = $request
             ->user()
             ->profile
             ->subscribers()
-            ->when($status["status"] ?? null, fn(Builder $query, string $status) => $query
+            ->when($request["status"] ?? null, fn(Builder $query, string $status) => $query
                 ->where("status", $status)
             )
-            ->with('fromProfile')->paginate();
+            ->with('fromProfile')->paginateBy($request);
 
         return SubscriptionResource::collection($subscriptions);
     }

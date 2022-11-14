@@ -28,7 +28,7 @@ class LikesController extends Controller
                 fn(Builder $query) => $query->where('type', PostType::Published->value)
             )->findOrFail($postId)
             ->likedProfiles()
-            ->paginate();
+            ->paginateBy($request);
 
         return ShortProfileResource::collection($likedProfiles);
     }

@@ -92,7 +92,7 @@ class Post extends Model
             ->whereHas('profile', fn(Builder $query) => $query
                 ->where("profile_id", $currentProfileId)
                 ->orWhere('is_private', false)
-                ->orWhereHas('subscriptions', fn(Builder $query) => $query
+                ->orWhereHas('subscribers', fn(Builder $query) => $query
                     ->where('from_profile_id', $currentProfileId)
                     ->where('status', SubscriptionStatus::Approved->value)
                 )

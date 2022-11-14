@@ -6,11 +6,6 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class UsersSignupRequest extends FormRequest
 {
-    public function authorize(): bool
-    {
-        return true;
-    }
-
     public function rules(): array
     {
         $date = now()->subYears(config("custom.min_age"));

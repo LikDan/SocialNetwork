@@ -47,6 +47,7 @@ class MessagesController extends Controller
             ->messagesToMe()
             ->create($message);
 
+        $message->load('senderProfile');
         $message = MessageResource::make($message);
         $toProfile->notify(new ProfileEvent($message->resolve(), "new_message", "New message"));
         return $message;

@@ -9,6 +9,7 @@ use App\Http\Requests\Api\v1\PostUpdateRequest;
 use App\Http\Resources\Api\v1\PostResource;
 use App\Models\Post;
 use App\Models\PostType;
+use App\Models\SubscriptionStatus;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Http\JsonResponse;
@@ -24,7 +25,7 @@ class PostsController extends Controller
         $posts = Post::availablePosts()
             ->where(["profile_id" => $profileId])
             ->where(["type" => $request["type"] ?? PostType::Published->value])
-            ->with('attachments')
+            ->with(['attachments', 'owner'])
             ->withCount(['likedProfiles', 'likedCurrentProfiles'])
             ->paginateBy($request->validated());
 
@@ -35,10 +36,14 @@ class PostsController extends Controller
     {
         $profile = $request->user()->profile;
         $posts = Post::query()
-            ->where(["type" => PostType::Published->value])
-            ->whereHas("ownerSubscribers", fn($query) => $query->where("from_profile_id", $profile->id))
+            ->rightJoin("subscriptions", "subscriptions.to_profile_id", "posts.profile_id")
+            ->where([
+                "from_profile_id" => $profile->id,
+                "subscriptions.status" => SubscriptionStatus::Approved->value,
+                "type" => PostType::Published->value,
+            ])
             ->orderBy("created_at")
-            ->with("attachments")
+            ->with(["attachments", "owner"])
             ->withCount(["likedProfiles", "likedCurrentProfiles"])
             ->paginateBy($request);
 
@@ -50,11 +55,12 @@ class PostsController extends Controller
      */
     public function show(Request $request, string $profileId, string $postId): PostResource
     {
-        $post = Post::availablePosts()->where(["profile_id" => $profileId])->findOrFail($postId);
+        $post = Post::availablePosts()
+            ->where(["profile_id" => $profileId])
+            ->with(['attachments', 'owner'])
+            ->withCount(['likedProfiles', 'likedCurrentProfiles'])
+            ->findOrFail($postId);
 
-        $post->load('attachments');
-        $post->loadCount('likedProfiles');
-        $post->loadCount('likedCurrentProfiles');
         return PostResource::make($post);
     }
 

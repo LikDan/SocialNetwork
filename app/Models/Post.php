@@ -68,11 +68,10 @@ class Post extends Model
         return $this->likedProfiles()->where("profile_id", Auth::user()->profile->id);
     }
 
-    public function profile(): BelongsTo
+    public function owner(): BelongsTo
     {
         return $this->belongsTo(Profile::class, "profile_id");
     }
-
 
     public function ownerSubscribers(): HasMany
     {
@@ -89,7 +88,7 @@ class Post extends Model
                 ->where('type', PostType::Published->value)
                 ->orWhere('profile_id', $currentProfileId)
             )
-            ->whereHas('profile', fn(Builder $query) => $query
+            ->whereHas('owner', fn(Builder $query) => $query
                 ->where("profile_id", $currentProfileId)
                 ->orWhere('is_private', false)
                 ->orWhereHas('subscribers', fn(Builder $query) => $query

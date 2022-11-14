@@ -20,6 +20,7 @@ class PostResource extends JsonResource
             'title' => $this->title,
             'text' => $this->text,
             'type' => $this->type,
+            'profile' => ShortProfileResource::make($this->whenLoaded('owner')),
             'attachments' => AttachmentResource::collection($this->whenLoaded('attachments')),
             'likes_amount' => $this->whenCounted('liked_profiles_count'),
             'is_liked' => (bool) $this->whenCounted('liked_current_profiles_count'),

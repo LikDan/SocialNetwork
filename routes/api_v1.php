@@ -32,36 +32,21 @@ Route::controller(UsersController::class)->prefix("users")->group(function () {
 Route::middleware('auth:sanctum')->group(function () {
     Route::controller(ProfileController::class)->prefix("profiles")->group(function () {
         Route::post('addPicture', 'addPicture');
-        Route::post('', 'updateProfile');
-        Route::get('', 'index');
-
+        Route::apiResource('', ProfileController::class)->except(["destroy", "store"]);
 
         Route::prefix("{profile}")->group(function () {
             Route::post('subscribe', [SubscriptionController::class, 'subscribe']);
             Route::delete('unsubscribe', [SubscriptionController::class, 'unsubscribe']);
 
-            Route::prefix("posts")->controller(PostsController::class)->group(function () {
+            Route::apiResource("posts", PostsController::class)->except(["update"]);
+            Route::apiResource("posts.attachments", AttachmentsController::class)->except("show", "index", "update");
+            Route::apiResource("messages", MessagesController::class)->except("update", "show");
+
+            Route::get("posts/feed", [PostsController::class, "feed"]);
+
+            Route::prefix("posts/{post}/likes")->controller(LikesController::class)->group(function () {
                 Route::get("", 'index');
-                Route::get("{post}", 'show');
-                Route::post("", 'store');
-                Route::put("{postId}", 'update');
-                Route::delete("{postId}", 'delete');
-
-                Route::prefix("{postId}/attachments")->controller(AttachmentsController::class)->group(function () {
-                    Route::post("", 'store');
-                    Route::delete("{attachment}", 'delete');
-                });
-
-                Route::prefix("{post}/likes")->controller(LikesController::class)->group(function () {
-                    Route::get("", 'index');
-                    Route::post("", 'toggle');
-                });
-            });
-
-            Route::prefix("messages")->controller(MessagesController::class)->group(function () {
-                Route::get("", "index");
-                Route::post("", "store");
-                Route::delete("{id}", "delete");
+                Route::post("", 'toggle');
             });
         });
     });

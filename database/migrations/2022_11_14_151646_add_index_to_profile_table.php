@@ -13,7 +13,7 @@ return new class extends Migration {
     public function up()
     {
         Schema::table('profiles', function (Blueprint $table) {
-            $table->string('name')->index();
+            $table->index('nickname');
         });
     }
 

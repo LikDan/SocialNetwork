@@ -16,7 +16,10 @@ class UsersController extends Controller
 {
     public function signup(UsersSignupRequest $request): JsonResponse
     {
-        $user = User::create($request->validated()["user"]);
+        $user = $request->validated()["user"];
+        $user["password"] = Hash::make($user["password"]);
+
+        $user = User::create($user);
 
         $profile = $request->validated()["profile"];
         $user->profile()->create($profile);

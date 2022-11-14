@@ -40,14 +40,6 @@ use Laravel\Sanctum\HasApiTokens;
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
-
-    public function password(): Attribute
-    {
-        return new Attribute(
-            set: fn ($value) => Hash::make($value),
-        );
-    }
-
     public function profile(): HasOne
     {
         return $this->hasOne(Profile::class);

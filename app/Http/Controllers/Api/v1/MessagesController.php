@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\v1;
 use App\Events\ProfileEvent;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\v1\CreateMessageRequest;
+use App\Http\Requests\Api\v1\MessagesIndexRequest;
 use App\Http\Resources\Api\v1\MessageResource;
 use App\Models\Message;
 use Illuminate\Http\Request;
@@ -12,15 +13,18 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class MessagesController extends Controller
 {
-    public function index(Request $request, string $toProfileID)
+    public function index(MessagesIndexRequest $request, string $toProfileID)
     {
         $profile = $request->user()->profile;
+        $request = $request->validated();
 
+        $perPage = $request["per_page"] ?? 20;
         $messages = Message::query()
             ->where(["from_profile_id" => $profile->id, "to_profile_id" => $toProfileID])
             ->orWhere(["to_profile_id" => $profile->id, "from_profile_id" => $toProfileID])
             ->orderByDesc("created_at")
-            ->paginate();
+            ->paginate($perPage)
+            ->appends($request);
 
         return MessageResource::collection($messages);
     }

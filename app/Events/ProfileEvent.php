@@ -8,15 +8,15 @@ use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
+use Illuminate\Notifications\Notification;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 
-class ProfileEvent implements ShouldBroadcastNow
+class ProfileEvent extends Notification implements ShouldBroadcastNow
 {
     use InteractsWithSockets, SerializesModels, Dispatchable, InteractsWithQueue;
 
     public function __construct(
-        private readonly Profile $profile,
         private readonly mixed   $data = null,
         private readonly string  $topic = "",
         private readonly string  $message = ""
@@ -24,12 +24,12 @@ class ProfileEvent implements ShouldBroadcastNow
     {
     }
 
-    public function broadcastOn(): PrivateChannel
+    public function join(User $user, string $profileID): bool
     {
-        return new PrivateChannel('profiles.' . $this->profile->id);
+        return $user->profile->id == $profileID;
     }
 
-    public function broadcastWith(): array
+    public function toArray(): array
     {
         return [
             "data" => $this->data,
@@ -38,9 +38,8 @@ class ProfileEvent implements ShouldBroadcastNow
         ];
     }
 
-
-    public function join(User $user, string $profileID): bool
+    public function via(): array
     {
-        return $user->profile->id == $profileID;
+        return ["broadcast"];
     }
 }

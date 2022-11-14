@@ -13,7 +13,6 @@ use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class MessagesController extends Controller
 {
@@ -48,8 +47,7 @@ class MessagesController extends Controller
             ->create($message);
 
         $message = MessageResource::make($message);
-        event(new ProfileEvent($toProfile, $message->resolve(), "new_message", "New message"));
-
+        $profile->notify(new ProfileEvent($message->resolve(), "new_message", "New message"));
         return $message;
     }
 
@@ -63,6 +61,7 @@ class MessagesController extends Controller
             ->findOrFail($messageID)
             ->delete();
 
+        $profile->notify(new ProfileEvent($messageID, "delete_message", "Delete message"));
         return response("", 204);
     }
 }

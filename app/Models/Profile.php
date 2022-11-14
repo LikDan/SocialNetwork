@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Notifications\Notifiable;
 
 /**
  * App\Models\Profile
@@ -44,7 +46,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  */
 class Profile extends Model
 {
-    use HasFactory;
+    use HasFactory, Notifiable;
 
     public function subscribedProfiles(): BelongsToMany {
         return $this->belongsToMany(Profile::class, "subscriptions", "from_profile_id", "to_profile_id")
@@ -70,6 +72,12 @@ class Profile extends Model
     {
         return $this->hasMany(Message::class, "to_profile_id");
     }
+
+    public function receivesBroadcastNotificationsOn()
+    {
+        return 'profiles.'.$this->id;
+    }
+
 
     protected $fillable = [
         'nickname',

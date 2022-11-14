@@ -5,7 +5,10 @@ namespace App\Http\Controllers\Api\v1;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\v1\AttachmentRequest;
 use App\Http\Resources\Api\v1\AttachmentResource;
+use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
@@ -19,7 +22,7 @@ class AttachmentsController extends Controller
 
         $max_attachments = config("custom.max_attachments");
         if ($post->attachments()->count() >= $max_attachments)
-            return response()->json(["error" => "Max attachments limit exceeded"], 400);
+            return response()->json(["error" => "Max attachments limit exceeded"], 422);
 
         $file = $request->file("file");
         $path = Storage::putFile('attachments', $file);
@@ -34,7 +37,7 @@ class AttachmentsController extends Controller
         return AttachmentResource::make($attachment);
     }
 
-    public function delete(Request $request, string $profileId, string $postId, string $attachmentId): JsonResponse
+    public function destroy(Request $request, string $profileId, string $postId, string $attachmentId): Application|ResponseFactory|Response
     {
         $attachment = $request
             ->user()
@@ -48,6 +51,6 @@ class AttachmentsController extends Controller
         Storage::delete($attachment->path);
         $attachment->delete();
 
-        return response()->json(["status" => "ok"]);
+        return response("", 204);
     }
 }

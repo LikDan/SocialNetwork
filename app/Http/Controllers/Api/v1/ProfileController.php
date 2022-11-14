@@ -11,6 +11,7 @@ use App\Http\Resources\Api\v1\ShortProfileResource;
 use App\Models\Profile;
 use App\Models\SubscriptionStatus;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Storage;
 
@@ -26,7 +27,7 @@ class ProfileController extends Controller
         return response()->json(["url" => Storage::url($file)]);
     }
 
-    public function updateProfile(ProfileUpdateRequest $request): ProfileResource
+    public function update(ProfileUpdateRequest $request): ProfileResource
     {
         $user = $request->user();
         $profileParams = $request->validated();
@@ -58,5 +59,12 @@ class ProfileController extends Controller
             ->appends($request);
 
         return ShortProfileResource::collection($profiles);
+    }
+
+    public function show(Request $request, string $profileID) {
+        $profile = $request->user()->profile;
+        $toProfile = $profile->subscriptions()->findOrFail($profileID);
+
+        return ProfileResource::make($toProfile);
     }
 }

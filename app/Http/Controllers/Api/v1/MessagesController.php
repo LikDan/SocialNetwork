@@ -8,7 +8,10 @@ use App\Http\Requests\Api\v1\CreateMessageRequest;
 use App\Http\Requests\Api\v1\MessagesIndexRequest;
 use App\Http\Resources\Api\v1\MessageResource;
 use App\Models\Message;
+use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class MessagesController extends Controller
@@ -50,7 +53,7 @@ class MessagesController extends Controller
         return $message;
     }
 
-    public function delete(Request $request, string $toProfileID, string $messageID)
+    public function destroy(Request $request, string $toProfileID, string $messageID): Application|ResponseFactory|Response
     {
         $profile = $request->user()->profile;
 
@@ -60,6 +63,6 @@ class MessagesController extends Controller
             ->findOrFail($messageID)
             ->delete();
 
-        return response()->json(["status" => "ok"]);
+        return response("", 204);
     }
 }

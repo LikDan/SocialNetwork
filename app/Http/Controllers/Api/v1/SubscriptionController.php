@@ -7,10 +7,13 @@ use App\Http\Requests\Api\v1\StatusQueryRequest;
 use App\Http\Resources\Api\v1\SubscriptionResource;
 use App\Models\Profile;
 use App\Models\SubscriptionStatus;
+use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Http\Response;
 
 class SubscriptionController extends Controller
 {
@@ -59,7 +62,7 @@ class SubscriptionController extends Controller
         return SubscriptionResource::make($subscription);
     }
 
-    public function unsubscribe(Request $request, Profile $profile): JsonResponse
+    public function unsubscribe(Request $request, Profile $profile): Application|ResponseFactory|Response
     {
         $request
             ->user()
@@ -69,7 +72,7 @@ class SubscriptionController extends Controller
             ->firstOrFail()
             ->delete();
 
-        return response()->json(["status" => "ok"]);
+        return response("", 204);
     }
 
     public function updateStatus(StatusQueryRequest $request, string $id)
@@ -85,7 +88,8 @@ class SubscriptionController extends Controller
         return $request["status"];
     }
 
-    private function removeSubscriber(Request $request, string $id) {
+    private function removeSubscriber(Request $request, string $id): Application|ResponseFactory|Response
+    {
         $request
             ->user()
             ->profile
@@ -94,6 +98,6 @@ class SubscriptionController extends Controller
             ->firstOrFail()
             ->delete();
 
-        return response()->json(["status" => "ok"]);
+        return response("", 204);
     }
 }

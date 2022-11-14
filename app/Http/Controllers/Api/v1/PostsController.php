@@ -9,9 +9,12 @@ use App\Http\Requests\Api\v1\PostUpdateRequest;
 use App\Http\Resources\Api\v1\PostResource;
 use App\Models\Post;
 use App\Models\PostType;
+use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Http\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class PostsController extends Controller
@@ -89,7 +92,7 @@ class PostsController extends Controller
         return PostResource::make($post->refresh());
     }
 
-    public function delete(Request $request, string $profileId, string $postId): JsonResponse
+    public function destroy(Request $request, string $profileId, string $postId): Application|ResponseFactory|Response
     {
         $request
             ->user()
@@ -99,6 +102,6 @@ class PostsController extends Controller
             ->findOrFail($postId)
             ->delete();
 
-        return response()->json(["status" => "ok"]);
+        return response("", 204);
     }
 }

@@ -14,10 +14,8 @@ class ProfileFactory extends Factory
     {
         return [
             'nickname' => fake()->name(),
-            'picture_path' => "avatars/default.png",
-            'user_id' => User::factory(),
             'is_private' => fake()->boolean(),
-            'birthday' => fake()->dateTime()
+            'birthday' => fake()->dateTime("2009-12-31")
         ];
     }
 }

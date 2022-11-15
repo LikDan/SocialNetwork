@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -55,4 +56,9 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
     ];
+
+    protected static function newFactory(): UserFactory
+    {
+        return UserFactory::new();
+    }
 }

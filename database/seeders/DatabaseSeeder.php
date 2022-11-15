@@ -2,23 +2,22 @@
 
 namespace Database\Seeders;
 
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\Message;
+use App\Models\Post;
+use App\Models\Profile;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
-    /**
-     * Seed the application's database.
-     *
-     * @return void
-     */
-    public function run()
-    {
-        // \App\Models\User::factory(10)->create();
+    private function fake() {
+        User::factory(500)->has(Profile::factory())->create();
+        Post::factory(2500)->create();
+        Message::factory(3000)->create();
+    }
 
-        // \App\Models\User::factory()->create([
-        //     'name' => 'Test User',
-        //     'email' => 'test@example.com',
-        // ]);
+    public function run(): void
+    {
+        //$this->fake();
     }
 }

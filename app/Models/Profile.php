@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Database\Factories\ProfileFactory;
+use Database\Factories\UserFactory;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -89,4 +91,9 @@ class Profile extends Model
     protected $hidden = [
         'user_id',
     ];
+
+    protected static function newFactory(): ProfileFactory
+    {
+        return ProfileFactory::new();
+    }
 }

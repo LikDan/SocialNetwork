@@ -30,15 +30,15 @@ Route::controller(UsersController::class)->prefix("users")->group(function () {
 });
 
 Route::middleware('auth:sanctum')->group(function () {
+    Route::apiResource('profiles', ProfileController::class)->except(["destroy", "store"]);
     Route::controller(ProfileController::class)->prefix("profiles")->group(function () {
         Route::post('addPicture', 'addPicture');
-        Route::apiResource('', ProfileController::class)->except(["destroy", "store"]);
 
         Route::prefix("{profile}")->group(function () {
             Route::post('subscribe', [SubscriptionController::class, 'subscribe']);
             Route::delete('unsubscribe', [SubscriptionController::class, 'unsubscribe']);
 
-            Route::apiResource("posts", PostsController::class)->except(["update"]);
+            Route::apiResource("posts", PostsController::class);
             Route::apiResource("posts.attachments", AttachmentsController::class)->except("show", "index", "update");
             Route::apiResource("messages", MessagesController::class)->except("update", "show");
 

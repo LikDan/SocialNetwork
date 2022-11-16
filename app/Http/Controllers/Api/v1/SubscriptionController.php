@@ -19,8 +19,6 @@ class SubscriptionController extends Controller
 {
     public function subscriptions(StatusQueryRequest $request): AnonymousResourceCollection
     {
-        $request = $request->validated();
-
         $subscriptions = $request
             ->user()
             ->profile
@@ -34,8 +32,6 @@ class SubscriptionController extends Controller
 
     public function subscribers(StatusQueryRequest $request): AnonymousResourceCollection
     {
-        $request = $request->validated();
-
         $subscriptions = $request
             ->user()
             ->profile
@@ -88,7 +84,7 @@ class SubscriptionController extends Controller
         return $request["status"];
     }
 
-    private function removeSubscriber(Request $request, string $id): Application|ResponseFactory|Response
+    public function removeSubscriber(Request $request, string $id): Application|ResponseFactory|Response
     {
         $request
             ->user()

@@ -27,12 +27,12 @@ class ProfileController extends Controller
         return response()->json(["url" => Storage::url($file)]);
     }
 
-    public function update(ProfileUpdateRequest $request): ProfileResource
+    public function update(ProfileUpdateRequest $request, string $profileID): ProfileResource
     {
         $user = $request->user();
         $profileParams = $request->validated();
 
-        $user->profile()->update($profileParams);
+        $user->profile()->findOrFail($profileID)->update($profileParams);
 
         if (!$profileParams["is_private"])
             $user
@@ -48,22 +48,31 @@ class ProfileController extends Controller
     public function index(ProfilesIndexRequest $request)
     {
         $profileId = $request->user()->profile->id;
-        $request = $request->validated();
 
-        $perPage = $request["per_page"] ?? 20;
         $profiles = Profile::query()
-            ->whereDoesntHave('subscriptions', fn(Builder $query) => $query
-                ->where('from_profile_id', $profileId)
+            ->where(fn(Builder $builder) => $builder
+                ->where("id", "!=", $profileId)
+                ->whereDoesntHave('subscriptions', fn(Builder $query) => $query
+                    ->where('from_profile_id', $profileId)
+                )
             )
-            ->paginate($perPage)
-            ->appends($request);
+            ->paginateBy($request);
 
         return ShortProfileResource::collection($profiles);
     }
 
-    public function show(Request $request, string $profileID) {
+    public function show(Request $request, string $toProfileID)
+    {
         $profile = $request->user()->profile;
-        $toProfile = $profile->subscriptions()->findOrFail($profileID);
+        $toProfile = Profile::query()
+            ->where(fn(Builder $builder) => $builder
+                ->where("is_private", false)
+                ->orWhereHas('subscribers', fn(Builder $query) => $query
+                    ->where('from_profile_id', $profile->id)
+                    ->where('status', SubscriptionStatus::Approved->value)
+                )
+            )
+            ->findOrFail($toProfileID);
 
         return ProfileResource::make($toProfile);
     }

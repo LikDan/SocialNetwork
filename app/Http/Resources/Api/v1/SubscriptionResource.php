@@ -19,8 +19,8 @@ class SubscriptionResource extends JsonResource
             'status' => $this->status,
             'to_profile_id' => $this->to_profile_id,
             'from_profile_id' => $this->from_profile_id,
-            'to_profile' => ProfileResource::make($this->whenLoaded('toProfile')),
-            'from_profile' => ProfileResource::make($this->whenLoaded('fromProfile')),
+            'to_profile' => ShortProfileResource::make($this->whenLoaded('toProfile')),
+            'from_profile' => ShortProfileResource::make($this->whenLoaded('fromProfile')),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

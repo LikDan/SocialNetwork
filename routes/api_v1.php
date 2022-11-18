@@ -38,8 +38,8 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::post('subscribe', [SubscriptionController::class, 'subscribe']);
             Route::delete('unsubscribe', [SubscriptionController::class, 'unsubscribe']);
 
+            Route::apiResource("attachments", AttachmentsController::class)->except("show", "index", "update");
             Route::apiResource("posts", PostsController::class);
-            Route::apiResource("posts.attachments", AttachmentsController::class)->except("show", "index", "update");
             Route::apiResource("messages", MessagesController::class)->except("update", "show");
 
             Route::get("posts/feed", [PostsController::class, "feed"]);

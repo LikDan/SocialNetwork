@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Attachment;
 use App\Models\Message;
 use App\Models\Post;
 use App\Models\Profile;

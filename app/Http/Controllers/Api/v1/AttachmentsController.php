@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\v1;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\v1\AttachmentRequest;
 use App\Http\Resources\Api\v1\AttachmentResource;
+use App\Models\Attachment;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Http\Request;
@@ -14,15 +15,9 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 
 class AttachmentsController extends Controller
 {
-    public function store(AttachmentRequest $request, string $profileId, string $postId): JsonResponse | AttachmentResource
+    public function store(AttachmentRequest $request, string $profileId): JsonResponse | AttachmentResource
     {
-        $user = $request->user();
-        $profile = $user->profile()->findOrFail($profileId);
-        $post = $profile->posts()->findOrFail($postId);
-
-        $max_attachments = config("custom.max_attachments");
-        if ($post->attachments()->count() >= $max_attachments)
-            return response()->json(["error" => "Max attachments limit exceeded"], 422);
+        $profile = $request->user()->profile()->findOrFail($profileId);
 
         $file = $request->file("file");
         $path = Storage::putFile('attachments', $file);
@@ -30,21 +25,20 @@ class AttachmentsController extends Controller
         $attachment = [
             "path" => $path,
             "display_name" => $file->getClientOriginalName(),
-            "type" => $file->getClientMimeType()
+            "type" => $file->getClientMimeType(),
+            "profile_id" => $profile->id
         ];
 
-        $attachment = $post->attachments()->create($attachment);
+        $attachment = Attachment::create($attachment);
         return AttachmentResource::make($attachment);
     }
 
-    public function destroy(Request $request, string $profileId, string $postId, string $attachmentId): Application|ResponseFactory|Response
+    public function destroy(Request $request, string $profileId, string $attachmentId): Application|ResponseFactory|Response
     {
         $attachment = $request
             ->user()
             ->profile()
             ->findOrFail($profileId)
-            ->posts()
-            ->findOrFail($postId)
             ->attachments()
             ->findOrFail($attachmentId);
 

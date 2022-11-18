@@ -9,6 +9,7 @@ use App\Http\Requests\Api\v1\PostUpdateRequest;
 use App\Http\Resources\Api\v1\PostResource;
 use App\Models\Post;
 use App\Models\PostType;
+use App\Models\Profile;
 use App\Models\SubscriptionStatus;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\Routing\ResponseFactory;
@@ -50,9 +51,6 @@ class PostsController extends Controller
         return PostResource::collection($posts);
     }
 
-    /**
-     * @throws NotFoundHttpException
-     */
     public function show(Request $request, string $profileId, string $postId): PostResource
     {
         $post = Post::availablePosts()
@@ -66,44 +64,58 @@ class PostsController extends Controller
 
     public function store(PostCreateRequest $request, string $profileId): PostResource
     {
+        $profile = $request->user()->profile()->findOrFail($profileId);
         $postParams = $request->validated();
 
-        $post = $request
-            ->user()
-            ->profile()
-            ->findOrFail($profileId)
-            ->posts()
-            ->create($postParams);
+        $post = $profile->posts()->create($postParams);
+
+        $attachments = $postParams["attachments"] ?? null;
+        if (!is_null($attachments)) {
+            $profile->attachments()->whereIn("id", $attachments)->update([
+                "attachable_type" => $post->getMorphClass(),
+                "attachable_id" => $post->id
+            ]);
+            $post->load('attachments');
+        }
 
         return PostResource::make($post);
     }
 
     public function update(PostUpdateRequest $request, string $profileId, string $postId): PostResource
     {
+        $profile = $request->user()->profile()->findOrFail($profileId);
         $postParams = $request->validated();
 
-        $post = $request
-            ->user()
-            ->profile()
-            ->findOrFail($profileId)
-            ->posts()
-            ->findOrFail($postId);
-
+        $post = $profile->posts()->with('attachments')->findOrFail($postId);
         $post->update($postParams);
 
-        $post->load('attachments');
+        $attachments = $postParams["attachments"] ?? null;
+        if (!is_null($attachments)) {
+            $profile->attachments()->whereIn("id", $attachments)->update([
+                "attachable_type" => $post->getMorphClass(),
+                "attachable_id" => $post->id
+            ]);
+
+            $post->attachments()->whereNotIn("id", $attachments)->update([
+                "attachable_type" => null,
+                "attachable_id" => null
+            ]);
+        }
+
         return PostResource::make($post->refresh());
     }
 
     public function destroy(Request $request, string $profileId, string $postId): Application|ResponseFactory|Response
     {
-        $request
-            ->user()
-            ->profile()
-            ->findOrFail($profileId)
-            ->posts()
-            ->findOrFail($postId)
-            ->delete();
+        $profile = $request->user()->profile()->findOrFail($profileId);
+        $post = $profile->posts()->findOrFail($postId);
+
+        $post->attachments()->update([
+            "attachable_type" => null,
+            "attachable_id" => null
+        ]);
+
+        $post->delete();
 
         return response("", 204);
     }

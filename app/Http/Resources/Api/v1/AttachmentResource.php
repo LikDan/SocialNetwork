@@ -22,6 +22,7 @@ class AttachmentResource extends JsonResource
             'type' => $this->type,
             'attachable_id' => $this->attachable_id,
             'attachable_type' => $this->attachable_type,
+            'profile_id' => $this->profile_id,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

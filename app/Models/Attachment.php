@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Database\Factories\AttachmentFactory;
+use Database\Factories\MessageFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
@@ -30,6 +32,8 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  * @method static \Illuminate\Database\Eloquent\Builder|Attachment whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Attachment whereUpdatedAt($value)
  * @mixin \Eloquent
+ * @property int $profile_id
+ * @method static \Illuminate\Database\Eloquent\Builder|Attachment whereProfileId($value)
  */
 class Attachment extends Model
 {
@@ -44,5 +48,11 @@ class Attachment extends Model
         'path',
         'display_name',
         'type',
+        'profile_id'
     ];
+
+    protected static function newFactory(): AttachmentFactory
+    {
+        return AttachmentFactory::new();
+    }
 }

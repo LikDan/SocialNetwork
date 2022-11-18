@@ -48,6 +48,8 @@ use Laravel\Sanctum\HasApiTokens;
  * @method static Builder|Post whereType($value)
  * @method static Builder|Post whereUpdatedAt($value)
  * @mixin \Eloquent
+ * @property-read \App\Models\Profile $owner
+ * @method static \Database\Factories\PostFactory factory(...$parameters)
  */
 class Post extends Model
 {

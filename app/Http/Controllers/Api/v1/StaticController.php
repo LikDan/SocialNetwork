@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\v1;
 use App\Http\Controllers\Controller;
 use App\Models\SubscriptionStatus;
 use Illuminate\Http\JsonResponse;
+use Storage;
 
 class StaticController extends Controller
 {
@@ -14,7 +15,7 @@ class StaticController extends Controller
         return response()->json([
             "subscriptions" => [
                 "statuses" => collect($cases)->map(fn($a) => ["name" => $a->name, "value" => $a->value]),
-            ]
+            ],
         ]);
     }
 }

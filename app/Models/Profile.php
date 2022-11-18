@@ -45,6 +45,11 @@ use Illuminate\Notifications\Notifiable;
  * @method static Builder|Profile whereUpdatedAt($value)
  * @method static Builder|Profile whereUserId($value)
  * @mixin \Eloquent
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Attachment[] $attachments
+ * @property-read int|null $attachments_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Message[] $messagesToMe
+ * @property-read int|null $messages_to_me_count
+ * @method static \Database\Factories\ProfileFactory factory(...$parameters)
  */
 class Profile extends Model
 {
@@ -75,9 +80,14 @@ class Profile extends Model
         return $this->hasMany(Message::class, "to_profile_id");
     }
 
-    public function receivesBroadcastNotificationsOn()
+    public function receivesBroadcastNotificationsOn(): string
     {
         return 'profiles.'.$this->id;
+    }
+
+    public function attachments(): HasMany
+    {
+        return $this->hasMany(Attachment::class, "profile_id");
     }
 
 

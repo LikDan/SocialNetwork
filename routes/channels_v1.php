@@ -1,6 +1,6 @@
 <?php
 
-use App\Events\ProfileEvent;
+use App\Notifications\ProfileNotification;
 use Illuminate\Support\Facades\Broadcast;
 
 /*
@@ -14,4 +14,4 @@ use Illuminate\Support\Facades\Broadcast;
 |
 */
 
-Broadcast::channel('profiles.{id}', ProfileEvent::class);
+Broadcast::channel('profiles.{id}', ProfileNotification::class);

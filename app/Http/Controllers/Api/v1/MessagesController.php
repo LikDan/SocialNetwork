@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers\Api\v1;
 
-use App\Events\ProfileEvent;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\v1\CreateMessageRequest;
 use App\Http\Requests\Api\v1\MessagesIndexRequest;
 use App\Http\Resources\Api\v1\MessageResource;
 use App\Models\Message;
 use App\Models\Profile;
+use App\Notifications\ProfileNotification;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Database\Eloquent\Builder;
@@ -49,7 +49,7 @@ class MessagesController extends Controller
 
         $message->load('senderProfile');
         $message = MessageResource::make($message);
-        $toProfile->notify(new ProfileEvent($message->resolve(), "new_message", "New message"));
+        $toProfile->notify(new ProfileNotification($message->resolve(), "new_message", "New message"));
         return $message;
     }
 
@@ -63,7 +63,7 @@ class MessagesController extends Controller
             ->findOrFail($messageID)
             ->delete();
 
-        $profile->notify(new ProfileEvent($messageID, "delete_message", "Delete message"));
+        $profile->notify(new ProfileNotification($messageID, "delete_message", "Delete message"));
         return response("", 204);
     }
 }

@@ -11,21 +11,33 @@ use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Facades\Image;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
 class AttachmentsController extends Controller
 {
-    public function store(AttachmentRequest $request, string $profileId): JsonResponse | AttachmentResource
+    public function store(AttachmentRequest $request, string $profileId): JsonResponse|AttachmentResource
     {
         $profile = $request->user()->profile()->findOrFail($profileId);
 
-        $file = $request->file("file");
-        $path = Storage::putFile('attachments', $file);
+        $image = $request->file("file");
+
+        $img = Image::make($image->path());
+        $profiles = $img->getCore()->getImageProfiles("icc", true);
+
+        $img->getCore()->stripImage();
+
+        if (!empty($profiles))
+            $img->getCore()->profileImage("icc", $profiles['icc']);
+
+        $random_hex = bin2hex(random_bytes(18));
+        $path = "attachments/" . $random_hex . '.' . $image->getClientOriginalExtension();
+        Storage::put($path, $img->stream());
 
         $attachment = [
             "path" => $path,
-            "display_name" => $file->getClientOriginalName(),
-            "type" => $file->getClientMimeType(),
+            "display_name" => $image->getClientOriginalName(),
+            "type" => $image->getClientMimeType(),
             "profile_id" => $profile->id
         ];
 

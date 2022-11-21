@@ -25,7 +25,6 @@ Route::get("static", [StaticController::class, 'static']);
 
 Route::controller(UsersController::class)->prefix("users")->group(function () {
     Route::post('signup', 'signup');
-    Route::middleware('auth:sanctum')->get('self', 'getUser');
     Route::post('login', 'login');
 });
 

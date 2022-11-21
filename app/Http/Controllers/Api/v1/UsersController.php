@@ -38,7 +38,7 @@ class UsersController extends Controller
      */
     public function login(UsersAuthRequest $request): JsonResponse
     {
-        $user = User::where('email', $request["email"])->first();
+        $user = User::where('email', $request["email"])->with('profile')->first();
         if (is_null($user) || !Hash::check($request["password"], $user->password)) {
             throw new AuthorizationException();
         }

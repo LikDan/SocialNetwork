@@ -64,6 +64,8 @@ class ProfileController extends Controller
     public function show(Request $request, string $toProfileID)
     {
         $profile = $request->user()->profile;
+        if ($toProfileID == "self") return ProfileResource::make($profile);
+
         $toProfile = Profile::query()
             ->where(fn(Builder $builder) => $builder
                 ->where("is_private", false)

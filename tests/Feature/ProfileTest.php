@@ -52,4 +52,14 @@ class ProfileTest extends TestCase
 
         $response->assertJson($profile);
     }
+
+    public function test_self()
+    {
+        $auth = Utils::auth($this);
+        $profile = $auth["user"]->profile->toArray();
+        unset($profile["picture_path"]);
+
+        $response = $this->get("/api/v1/profiles/self", $auth["headers"]);
+        $response->assertJson($profile);
+    }
 }

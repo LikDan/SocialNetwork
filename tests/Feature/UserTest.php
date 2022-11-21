@@ -47,28 +47,4 @@ class UserTest extends TestCase
         $response = $this->post("/api/v1/users/login", $body);
         $response->assertJsonFragment($user->toArray());
     }
-
-    public function test_self()
-    {
-        $user = User::factory()->has(Profile::factory())->create();
-
-        $body = [
-            "email" => $user->email,
-            "password" => "password"
-        ];
-
-        $response = $this->post("/api/v1/users/login", $body);
-        $token = $response->decodeResponseJson()["token"];
-
-        $headers = [
-            "Authorization" => "Bearer " . $token
-        ];
-
-        $user->load('profile');
-        $user = $user->toArray();
-        unset($user["profile"]["picture_path"]);
-
-        $response = $this->get("/api/v1/users/self", $headers);
-        $response->assertJson($user);
-    }
 }

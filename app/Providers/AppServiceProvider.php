@@ -8,7 +8,11 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
+use Monolog\Handler\StreamHandler;
+use Monolog\Logger;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -33,6 +37,16 @@ class AppServiceProvider extends ServiceProvider
             'posts' => Post::class,
             'users' => User::class
         ]);
+
+        DB::listen(function ($query) {
+            $queryLogger = new Logger('query');
+            $queryLogger->pushHandler(new StreamHandler(storage_path('logs/query.log')));
+            $queryLogger->info($query->sql,
+                [
+                    'bindings' => $query->bindings,
+                    'time' => $query->time
+                ]);
+        });
 
         Builder::macro('paginateBy', function (
             mixed  $params,

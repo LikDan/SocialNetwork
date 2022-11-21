@@ -14,17 +14,30 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Facades\Image;
 
 class ProfileController extends Controller
 {
     public function addPicture(AvatarRequest $request): JsonResponse
     {
-        $avatar = $request->file("avatar");
+        $profile = $request->user()->profile();
+        $image = $request->file("avatar");
 
-        $file = Storage::putFile('avatars', $avatar);
-        $request->user()->profile()->update(["picture_path" => $file]);
+        $img = Image::make($image->path());
+        $profiles = $img->getCore()->getImageProfiles("icc", true);
 
-        return response()->json(["url" => Storage::url($file)]);
+        $img->getCore()->stripImage();
+
+        if (!empty($profiles))
+            $img->getCore()->profileImage("icc", $profiles['icc']);
+
+        $random_hex = bin2hex(random_bytes(18));
+        $path = "avatars/" . $random_hex . '.' . $image->getClientOriginalExtension();
+        Storage::put($path, $img->stream());
+
+        $profile->update(["picture_path" => $path]);
+
+        return response()->json(["url" => Storage::url($path)]);
     }
 
     public function update(ProfileUpdateRequest $request, string $profileID): ProfileResource

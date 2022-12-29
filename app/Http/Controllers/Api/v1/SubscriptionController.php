@@ -79,9 +79,9 @@ class SubscriptionController extends Controller
             ->subscribers()
             ->where("from_profile_id", $id)
             ->firstOrFail()
-            ->update($request["status"]);
+            ->update(["status" => $request["status"]]);
 
-        return $request["status"];
+        return response()->json($request["status"]);
     }
 
     public function removeSubscriber(Request $request, string $id): Application|ResponseFactory|Response

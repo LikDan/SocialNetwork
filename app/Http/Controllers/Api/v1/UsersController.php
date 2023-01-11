@@ -22,6 +22,7 @@ class UsersController extends Controller
         $user = User::create($user);
 
         $profile = $request->validated()["profile"];
+        $profile["picture_path"] = "avatars/default.png";
         $user->profile()->create($profile);
 
         $user->load('profile');

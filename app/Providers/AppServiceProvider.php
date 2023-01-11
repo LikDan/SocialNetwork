@@ -52,7 +52,7 @@ class AppServiceProvider extends ServiceProvider
             mixed  $params,
             bool   $desc = false,
             string $byColumn = "id",
-            int    $defaultPerPage = 20
+            int    $defaultPerPage = 20,
         ) {
             $perPage = $params["per_page"] ?? $defaultPerPage;
             $from = $params["from"] ?? null;

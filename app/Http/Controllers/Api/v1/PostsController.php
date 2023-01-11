@@ -28,7 +28,7 @@ class PostsController extends Controller
             ->where(["type" => $request["type"] ?? PostType::Published->value])
             ->with(['attachments', 'owner'])
             ->withCount(['likedProfiles', 'likedCurrentProfiles'])
-            ->paginateBy($request->validated());
+            ->paginateBy($request->validated(), false, 'posts.id');
 
         return PostResource::collection($posts);
     }
@@ -46,7 +46,7 @@ class PostsController extends Controller
             ->orderBy("created_at")
             ->with(["attachments", "owner"])
             ->withCount(["likedProfiles", "likedCurrentProfiles"])
-            ->paginateBy($request);
+            ->paginateBy($request, false, 'posts.id');
 
         return PostResource::collection($posts);
     }

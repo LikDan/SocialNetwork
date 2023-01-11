@@ -12,13 +12,13 @@ use Illuminate\Database\Seeder;
 class DatabaseSeeder extends Seeder
 {
     private function fake() {
-        User::factory(500)->has(Profile::factory())->create();
-        Post::factory(2500)->create();
-        Message::factory(3000)->create();
+        User::factory(25)->has(Profile::factory())->create();
+        Post::factory(200)->create();
+        //Message::factory(3000)->create();
     }
 
     public function run(): void
     {
-        //$this->fake();
+        $this->fake();
     }
 }

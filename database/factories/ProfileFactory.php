@@ -15,7 +15,8 @@ class ProfileFactory extends Factory
         return [
             'nickname' => fake()->name(),
             'is_private' => fake()->boolean(),
-            'birthday' => fake()->dateTime("2009-12-31")
+            'birthday' => fake()->dateTime("2009-12-31"),
+            'picture_path' => "avatars/default.png"
         ];
     }
 }
